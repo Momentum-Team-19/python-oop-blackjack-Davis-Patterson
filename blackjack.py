@@ -1,16 +1,17 @@
 import random
-
+import os
+from card_values import CARD_VALUES
 SUITS = ['♠', '♥', '♦', '♣']
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 
 
 class Card:
-    def __init__(self, suit, rank):
-        self.suit = suit
+    def __init__(self,  rank, suit):
         self.rank = rank
+        self.suit = suit
 
     def __str__(self):
-        return f'{self.suit} {self.rank}'
+        return f'{self.rank} {self.suit}'
 
 
 class Deck:
@@ -19,7 +20,7 @@ class Deck:
 
         for suit in SUITS:
             for rank in RANKS:
-                new_card = Card(suit, rank)
+                new_card = Card(rank, suit)
                 self.cards.append(new_card)
 
     def __str__(self):
@@ -39,7 +40,7 @@ class Deck:
 
 class Player:
     def __init__(self, name):
-        self.name = name
+        self.name = input('What is your name? > ')
         self.hand = []
 
     def show_hand(self):
@@ -48,7 +49,8 @@ class Player:
 
 class Dealer(Player):
     def __init__(self, name='Dealer'):
-        super().__init__(name)  # super means 'parent', calls whatever is in the parent, if nothing is different then don't write it (it'll default to parent init)
+        self.name = 'Dealer'
+        self.hand = []
 
     def __str__():
         return 'Dealer'
@@ -57,16 +59,13 @@ class Dealer(Player):
 class Game:
     def __init__(self):
         self.name = 'Blackjack'
-        self.player_count = 0
-        self.players = []
         self.deck = Deck()
+        self.deck.shuffle()
+        self.player = Player('miles')
+        self.dealer = Dealer()
 
     def __str__(self):
         return self.name
-    
-    def add_players(self, player):
-        self.players.append(player)
-        self.player_count += 1
 
     def deal_card(self, player):
         if self.deck.cards:
@@ -76,20 +75,20 @@ class Game:
             print('No more cards')
 
     def play_hand(self):
-        for _ in range(2):
-            for player in self.players:
-                self.deal_card(self.deck, player)
+        self.deal_card(self.player)
+        self.deal_card(self.dealer)
+        self.deal_card(self.player)
+        self.deal_card(self.dealer)
+        self.player.show_hand()
+        self.dealer.show_hand()
+        
+    def eval_hand(self):
+        for card in self.player.hand:
 
     def play_game(self):
         print(f'Welcome to {self.name}!')
-        player_name = input('What is your name? > ')
-        self.add_players(f'{player_name}')
-        self.add_players(Dealer())
-        print(self.players)
-        print(self.player_count)
-        self.deck.shuffle()
         print(self.deck)
-        # self.play_hand()
+        self.play_hand()
 
 
 
