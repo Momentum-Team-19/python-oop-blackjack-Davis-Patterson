@@ -1,5 +1,4 @@
-suits = ['♠', '♥', '♦', '♣']
-ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+import random
 
 
 class Card:
@@ -11,22 +10,25 @@ class Card:
         return f'{self.rank} of {self.suit}'
 
 
-class Deck: 
-    def __init__(self, suits, ranks):
+class Deck:
+    suits = ['♠', '♥', '♦', '♣']
+    ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+
+    def __init__(self):
         self.cards = []
 
-        for suit in suits:
-            for rank in ranks:
+        for suit in self.suits:
+            for rank in self.ranks:
                 new_card = Card(suit, rank)
                 self.cards.append(new_card)
-    
+
     def __str__(self):
         cards_str = ', '.join(str(card) for card in self.cards)
         return f'Deck of {len(self.cards)} cards: {cards_str}'
-    
 
-new_deck = Deck(suits, ranks)
+    def shuffle(self):
+        random.shuffle(self.cards)
+
+
+new_deck = Deck()
 print(new_deck)
-
-
-
