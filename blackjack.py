@@ -2,11 +2,11 @@ import random
 import time
 import os
 from card_values import CARD_VALUES
-from textures import card_img, texture1
+from textures import cards_txt, texture1
 import pyfiglet
 import pygame
 import colorama
-from colorama import Fore
+from colorama import Fore, Style
 
 colorama.init(autoreset=True)
 
@@ -16,8 +16,11 @@ current_directory = os.path.dirname(__file__)
 music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 
 SUITS = [
-    f'{Fore.BLUE}♠{Fore.WHITE}', f'{Fore.RED}❤{Fore.WHITE}',
-    f'{Fore.RED}♦{Fore.WHITE}', f'{Fore.BLUE}♣{Fore.WHITE}']
+    f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
+    f'{Fore.RED}❤{Fore.WHITE}',
+    f'{Fore.RED}♦{Fore.WHITE}',
+    f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
+]
 # SUITS = ['♠', '❤', '♦', '♣']
 RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
@@ -186,7 +189,9 @@ class Game:
         while play_flag:
             self.player.total = 0
             self.dealer.total = 0
-            print(self.deck)
+
+            print(self.deck)  # <= PRINTS THE WHOLE DECK AT START OF PLAY
+
             self.play_hand()
             self.player.total = self.calc_hand(self.player)
             self.dealer.total = self.calc_hand(self.dealer)
@@ -244,11 +249,11 @@ class Menu:
         game_name_text = pyfiglet.figlet_format(
             text='Blackjack', font='big')
         print(game_name_text)
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.load(music_path)
+        # pygame.mixer.music.play(-1)
 
         while True:
-            self.print_texture(card_img)
+            self.print_texture(cards_txt)
             print('\n')
             self.print_texture(texture1)
             menu_text = pyfiglet.figlet_format(text="Menu", font="rectangles")
