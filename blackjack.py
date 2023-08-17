@@ -514,8 +514,9 @@ class Menu:
             self.print_texture(texture1)
             menu_text = pyfiglet.figlet_format(text="Menu", font="rectangles")
             print(menu_text)
-            print('Options:\n[P]lay game\n[V]iew scores\n[S]ettings\n[E]xit\n')
+            print('Options:\n[P]lay game\n[V]iew scores\n[W]allet\n[S]ettings\n[E]xit\n')
             menu_choice = input('Please select an option > ').lower().strip()
+
             if menu_choice == 'p' or menu_choice == '':
                 new_game = Game()
                 new_game.play_game()
@@ -523,6 +524,9 @@ class Menu:
             if menu_choice == 'v':
                 print(f"The Player's score is: {new_game.player.score}")
                 print(f"The Dealer's score is: {new_game.dealer.score}")
+
+            if menu_choice == 'w':
+                self.display_wallet(new_game.player)
 
             elif menu_choice == 's':
                 time.sleep(.5)
@@ -599,6 +603,9 @@ class Menu:
     def print_texture(self, texture):
         for line_number in texture:
             print(texture[line_number])
+
+    def display_wallet(self, player):
+        print(f"\n{player.name}'s available balance: ${Fore.GREEN}{player.money}{Fore.WHITE}\n")
 
 
 if __name__ == "__main__":
