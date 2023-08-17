@@ -24,7 +24,7 @@ music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 #     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 # ]
 SUITS = ['♠', '❤', '♦', '♣']
-RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+RANKS = ['A', '2', 'A', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 CARD_FORMATS = {
     '♠': f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
     '❤': f'{Fore.RED}❤{Fore.WHITE}',
@@ -70,7 +70,9 @@ class Player:
     def __init__(self, name):
         self.name = name
         self.hand = []
+        self.hand2 = []
         self.total = 0
+        self.total2 = 0
         self.score = 0
 
     def __str__(self):
@@ -82,8 +84,16 @@ class Player:
             hand_line = '  '.join([card_imgs[str(card)][line] for card in self.hand])
             print(hand_line)
         print()
+        
+        if self.hand2: 
+            print(f"{self.name}'s second hand: ")
+            for line in range(7):
+                hand_line = '  '.join([card_imgs[str(card)][line] for card in self.hand2])
+                print(hand_line)
+            print()
 
-class Dealer(Player):
+
+class Dealer():
     def __init__(self):
         self.name = 'Dealer'
         self.hand = []
@@ -109,12 +119,21 @@ class Game:
     def __init__(self):
         self.name = 'Blackjack'
         self.deck = Deck()
-        self.deck.shuffle()
+        # self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         self.player = Player(input('What is your name? > '))
         self.dealer = Dealer()
 
     def __str__(self):
         return self.name
+    
+    def split_hand(self):
+        if len(self.player.hand) == 2 and self.player.hand[0].rank == self.player.hand[1].rank:
+            self.player.hand2.append(self.player.hand.pop())  # Move one card to the second hand
+            self.deal_card(self.player.hand)
+            self.deal_card(self.player.hand2)
+
+            self.player.total2 = self.calc_hand(self.player.hand2)  # Calculate total for second hand
+            self.player.total = self.calc_hand(self.player.hand)  # Recalculate total for the original hand
 
     def clear_cards(self):
         self.deck.used_cards.extend(self.player.hand)
@@ -122,7 +141,7 @@ class Game:
         self.player.hand.clear()
         self.dealer.hand.clear()
 
-    def deal_card(self, player):
+    def deal_card(self, hand):
         if not self.deck.cards:
             print('Reshuffling the deck')  # <= RESHUFFLES DECK WHEN EMPTY
             time.sleep(.5)
@@ -133,83 +152,89 @@ class Game:
             self.deck.shuffle()
 
         card = self.deck.cards.pop(0)
-        player.hand.append(card)
+        hand.append(card)
 
     def play_hand(self):
-        self.deal_card(self.player)
-        self.deal_card(self.dealer)
-        self.deal_card(self.player)
-        self.deal_card(self.dealer)
-        self.dealer.total = self.calc_hand(self.dealer)
-        self.player.total = self.calc_hand(self.player)
+        self.deal_card(self.player.hand)
+        self.deal_card(self.dealer.hand)
+        self.deal_card(self.player.hand)
+        self.deal_card(self.dealer.hand)
+        self.dealer.total = self.calc_hand(self.dealer.hand)
+        self.player.total = self.calc_hand(self.player.hand)
 
         self.dealer.show_hand(initial=True)
-        self.dealer.total = self.calc_hand(self.dealer)
-        self.player.total = self.calc_hand(self.player)
+        self.dealer.total = self.calc_hand(self.dealer.hand)
+        self.player.total = self.calc_hand(self.player.hand)
         self.player.show_hand()
         print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
 
 
-    def calc_hand(self, player):
+    def calc_hand(self, hand):
         total = 0
         has_ace = False
 
-        for card in player.hand:
+        for card in hand:
             rank = card.rank.upper()
             if rank in CARD_VALUES:
                 total += CARD_VALUES[rank]
                 if rank == 'A':
                     has_ace = True
-        
+
         if has_ace and total >= 22:
             total -= 10
 
         return total
 
-    def hit_me(self):
-        while self.player.total < 21:
+    def hit_hand(self, hand):
+        while self.calc_hand(hand) < 21:
             if not self.deck.cards:
                 print('No more cards\n')
                 break
-            
-            hit_me = input(
-                'Do you want another card? (y/n) > ').lower().strip()
-            if hit_me == 'n':
+
+            hit_input = input(
+                f"Do you want to hit on this hand? (y/n) > ").lower().strip()
+            if hit_input == 'n':
                 print('\n')
                 break
 
-            elif hit_me == 'y':
-                self.deal_card(self.player)
+            elif hit_input == 'y':
+                self.deal_card(hand)
                 os.system('clear')
 
                 self.dealer.show_hand(initial=True)
-                self.dealer.total = self.calc_hand(self.dealer)
-                self.player.total = self.calc_hand(self.player)
+                self.dealer.total = self.calc_hand(self.dealer.hand)
+                self.player.total = self.calc_hand(self.player.hand)
+                if self.player.hand2:
+                    self.player.total2 = self.calc_hand(self.player.hand2)
                 self.player.show_hand()
-                print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
+                print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                if self.player.hand2:
+                    print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
 
             else:
                 invalid_text = pyfiglet.figlet_format(
-                    text='IVALID', font='small')
+                    text='INVALID', font='small')
                 print(f'{Fore.RED}{invalid_text}')
                 print("Please enter either 'y' or 'n'\n")
 
-        return self.player.total
+        return self.calc_hand(hand)
 
     def dealer_hit(self):
         while self.dealer.total < 16:
             if not self.deck.cards:
                 print("No more cards")
                 break
-            self.deal_card(self.dealer)
+            self.deal_card(self.dealer.hand)
             os.system('clear')
-            
+
             self.dealer.show_hand(initial=True)
-            self.dealer.total = self.calc_hand(self.dealer)
-            self.player.total = self.calc_hand(self.player)
+            self.dealer.total = self.calc_hand(self.dealer.hand)
+            self.player.total = self.calc_hand(self.player.hand)
 
             self.player.show_hand()
             print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
+            if self.player.hand2:
+                print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
 
             print('...')
             time.sleep(1)
@@ -218,19 +243,31 @@ class Game:
         return self.dealer.total
 
     def eval_hands(self):
-        self.player.total = self.calc_hand(self.player)
-        self.dealer.total = self.calc_hand(self.dealer)
+        self.player.total = self.calc_hand(self.player.hand)
+        self.dealer.total = self.calc_hand(self.dealer.hand)
+        if self.player.total2 == 0:
+            if self.player.total > 21:
+                return "Dealer"
+            elif self.dealer.total > 21:
+                return self.player.name
+            elif self.player.total > self.dealer.total:
+                return self.player.name
+            elif self.dealer.total > self.player.total:
+                return "Dealer"
+            elif self.player.total == self.dealer.total:
+                return "Draw"
 
-        if self.player.total > 21:
-            return "Dealer"
-        elif self.dealer.total > 21:
-            return self.player.name
-        elif self.player.total > self.dealer.total:
-            return self.player.name
-        elif self.dealer.total > self.player.total:
-            return "Dealer"
-        else:
-            return "Draw"
+        elif self.player.total2 > 0:
+            if self.player.total > 21 and self.player.total2 > 21:
+                return "Dealer"
+            elif self.dealer.total > 21:
+                return self.player.name
+            elif self.player.total > self.dealer.total or self.player.total2 > self.dealer.total:
+                return self.player.name
+            elif self.dealer.total > self.player.total and self.dealer.total > self.player.total2:
+                return "Dealer"
+            elif self.player.total == self.dealer.total and self.player.total2 == self.dealer.total:
+                return "Draw"
 
     def play_game(self):
         play_flag = True
@@ -242,17 +279,30 @@ class Game:
             # print(self.deck)  # <= PRINTS THE WHOLE DECK AT START OF PLAY
 
             self.play_hand()
-            
+
+            if len(self.player.hand) == 2 and self.player.hand[0].rank == self.player.hand[1].rank:
+                split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
+                if split_decision == 'y':
+                    self.split_hand()
+                    os.system('clear')
+                    self.dealer.show_hand()
+                    self.player.show_hand()
+                    print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                    if self.player.hand2:
+                        print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+
             if self.player.total < 21:
-                self.player.total = self.hit_me()
+                self.player.total = self.hit_hand(self.player.hand)
+            if self.player.hand2 and self.player.total2 < 21:
+                self.player.total2 = self.hit_hand(self.player.hand2)
             if self.player.total <= 21 and self.dealer.total <= 16:
                 self.dealer.total = self.dealer_hit()
 
             os.system('clear')
 
             self.dealer.show_hand(initial=False)
-            self.dealer.total = self.calc_hand(self.dealer)
-            self.player.total = self.calc_hand(self.player)
+            self.dealer.total = self.calc_hand(self.dealer.hand)
+            self.player.total = self.calc_hand(self.player.hand)
             if self.dealer.total >= 22:
                 dealer_total_color = Fore.RED
             elif self.player.total > 21 and self.dealer.total <= 21:
@@ -277,6 +327,19 @@ class Game:
             else:
                 player_total_color = Fore.RED
             print(f"{self.player.name}'s final total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
+            
+            if self.player.total2 > 0:
+                if self.player.total2 >= 22:
+                    player_total2_color = Fore.RED
+                if self.dealer.total > 21 and self.player.total2 <= 21:
+                    player_total2_color = Fore.GREEN
+                elif self.player.total2 > self.dealer.total and self.player.total2 <= 21:
+                    player_total2_color = Fore.GREEN
+                elif self.player.total2 < self.dealer.total and self.dealer.total <= 21:
+                    player_total2_color = Fore.RED
+                else:
+                    player_total2_color = Fore.RED
+                print(f"{self.player.name}'s second final total: {player_total2_color}{self.player.total2}{Fore.WHITE}\n")
             
             winner = self.eval_hands()
             if winner == f'{self.player.name}':
@@ -345,7 +408,6 @@ class Menu:
             if menu_choice == 'p':
                 new_game = Game()
                 new_game.play_game()
-                
 
             if menu_choice == 'v':
                 print(f"The Player's score is: {new_game.player.score}")
@@ -413,7 +475,7 @@ class Menu:
 
     def __str__(self):
         return 'Menu'
-    
+
     def view_all_cards(self):
         print(f'Deck has {Fore.GREEN}{len(card_imgs)}{Fore.WHITE} cards\n')
         for card_name, card_data in card_imgs.items():
