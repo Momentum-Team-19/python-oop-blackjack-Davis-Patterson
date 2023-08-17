@@ -1,6 +1,16 @@
 # import colorama
 from colorama import Fore, Style
 
+blank_card = {
+    0: '┌───────┐',
+    1: '│       │',
+    2: '│       │',
+    3: '│   ?   │',
+    4: '│       │',
+    5: '│       │',
+    6: '└───────┘'
+}
+
 card_imgs = {
     'A♦': {
         0: '┌───────┐',

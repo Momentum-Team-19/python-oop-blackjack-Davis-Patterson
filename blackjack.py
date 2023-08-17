@@ -2,7 +2,7 @@ import random
 import time
 import os
 from card_values import CARD_VALUES
-from card_imgs import card_imgs
+from card_imgs import card_imgs, blank_card
 from textures import cards_txt, texture1
 import pyfiglet
 import pygame
@@ -92,13 +92,24 @@ class Dealer(Player):
 
     def __str__(self):
         return self.name
+    
+    def show_hand(self, initial=False):
+        card_imgs['?'] = blank_card
+        print(f"{self.name} has: ")
+        for line_num in range(7):
+            if initial:
+                hand_line = '  '.join([card_imgs['?'][line_num] if index == 0 else card_imgs[str(card)][line_num] for index, card in enumerate(self.hand)])
+            else:
+                hand_line = '  '.join([card_imgs[str(card)][line_num] for card in self.hand])
+            print(hand_line)
+        print()
 
 
 class Game:
     def __init__(self):
         self.name = 'Blackjack'
         self.deck = Deck()
-        # self.deck.shuffle()
+        self.deck.shuffle()
         self.player = Player(input('What is your name? > '))
         self.dealer = Dealer()
 
@@ -132,33 +143,11 @@ class Game:
         self.dealer.total = self.calc_hand(self.dealer)
         self.player.total = self.calc_hand(self.player)
 
-        self.dealer.show_hand()
+        self.dealer.show_hand(initial=True)
         self.dealer.total = self.calc_hand(self.dealer)
         self.player.total = self.calc_hand(self.player)
-        if self.dealer.total >= 22:
-            dealer_total_color = Fore.RED
-        elif self.player.total > 21 and self.dealer.total <= 21:
-            dealer_total_color = Fore.GREEN
-        elif self.dealer.total > self.player.total and self.dealer.total <= 21:
-            dealer_total_color = Fore.GREEN
-        elif self.dealer.total < self.player.total and self.player.total <= 21:
-            dealer_total_color = Fore.RED
-        else:
-            dealer_total_color = Fore.RED
-        print(f"{self.dealer.name}'s total: {dealer_total_color}{self.dealer.total}{Fore.WHITE}\n")
-
         self.player.show_hand()
-        if self.player.total >= 22:
-            player_total_color = Fore.RED
-        if self.dealer.total > 21 and self.player.total <= 21:
-            player_total_color = Fore.GREEN
-        elif self.player.total > self.dealer.total and self.player.total <= 21:
-            player_total_color = Fore.GREEN
-        elif self.player.total < self.dealer.total and self.dealer.total <= 21:
-            player_total_color = Fore.RED
-        else:
-            player_total_color = Fore.RED
-        print(f"{self.player.name}'s total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
+        print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
 
 
     def calc_hand(self, player):
@@ -193,33 +182,11 @@ class Game:
                 self.deal_card(self.player)
                 os.system('clear')
 
-                self.dealer.show_hand()
+                self.dealer.show_hand(initial=True)
                 self.dealer.total = self.calc_hand(self.dealer)
                 self.player.total = self.calc_hand(self.player)
-                if self.dealer.total >= 22:
-                    dealer_total_color = Fore.RED
-                elif self.player.total > 21 and self.dealer.total <= 21:
-                    dealer_total_color = Fore.GREEN
-                elif self.dealer.total > self.player.total and self.dealer.total <= 21:
-                    dealer_total_color = Fore.GREEN
-                elif self.dealer.total < self.player.total and self.player.total <= 21:
-                    dealer_total_color = Fore.RED
-                else:
-                    dealer_total_color = Fore.RED
-                print(f"{self.dealer.name}'s total: {dealer_total_color}{self.dealer.total}{Fore.WHITE}\n")
-
                 self.player.show_hand()
-                if self.player.total >= 22:
-                    player_total_color = Fore.RED
-                if self.dealer.total > 21 and self.player.total <= 21:
-                    player_total_color = Fore.GREEN
-                elif self.player.total > self.dealer.total and self.player.total <= 21:
-                    player_total_color = Fore.GREEN
-                elif self.player.total < self.dealer.total and self.dealer.total <= 21:
-                    player_total_color = Fore.RED
-                else:
-                    player_total_color = Fore.RED
-                print(f"{self.player.name}'s total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
+                print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
 
             else:
                 invalid_text = pyfiglet.figlet_format(
@@ -237,33 +204,12 @@ class Game:
             self.deal_card(self.dealer)
             os.system('clear')
             
-            self.dealer.show_hand()
+            self.dealer.show_hand(initial=True)
             self.dealer.total = self.calc_hand(self.dealer)
             self.player.total = self.calc_hand(self.player)
-            if self.dealer.total >= 22:
-                dealer_total_color = Fore.RED
-            elif self.player.total > 21 and self.dealer.total <= 21:
-                dealer_total_color = Fore.GREEN
-            elif self.dealer.total > self.player.total and self.dealer.total <= 21:
-                dealer_total_color = Fore.GREEN
-            elif self.dealer.total < self.player.total and self.player.total <= 21:
-                dealer_total_color = Fore.RED
-            else:
-                dealer_total_color = Fore.RED
-            print(f"{self.dealer.name}'s total: {dealer_total_color}{self.dealer.total}{Fore.WHITE}\n")
 
             self.player.show_hand()
-            if self.player.total >= 22:
-                player_total_color = Fore.RED
-            if self.dealer.total > 21 and self.player.total <= 21:
-                player_total_color = Fore.GREEN
-            elif self.player.total > self.dealer.total and self.player.total <= 21:
-                player_total_color = Fore.GREEN
-            elif self.player.total < self.dealer.total and self.dealer.total <= 21:
-                player_total_color = Fore.RED
-            else:
-                player_total_color = Fore.RED
-            print(f"{self.player.name}'s total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
+            print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
 
             print('...')
             time.sleep(1)
@@ -304,7 +250,7 @@ class Game:
 
             os.system('clear')
 
-            self.dealer.show_hand()
+            self.dealer.show_hand(initial=False)
             self.dealer.total = self.calc_hand(self.dealer)
             self.player.total = self.calc_hand(self.player)
             if self.dealer.total >= 22:
@@ -335,10 +281,10 @@ class Game:
             winner = self.eval_hands()
             if winner == f'{self.player.name}':
                 self.player.score += 1
-                print(f'Winner: {winner}!\nWith a score of {Fore.GREEN}{self.player.total}{Fore.WHITE}\n')
+                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nWith a score of {Fore.GREEN}{self.player.total}{Fore.WHITE}\n')
             if winner == 'Dealer':
                 self.dealer.score += 1
-                print(f'Winner: {winner} :(\nWith a score of {Fore.RED}{self.dealer.total}{Fore.WHITE}\n')
+                print(f'Winner: {Fore.RED}{winner}{Fore.WHITE} :(\nWith a score of {Fore.RED}{self.dealer.total}{Fore.WHITE}\n')
             if winner == 'Draw':
                 print(
                     f'Draw!\nEach player had a total of {Fore.RED}{self.player.total}{Fore.WHITE}')
@@ -377,8 +323,8 @@ class Game:
 class Menu:
     def __init__(self):
         os.system('clear')
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.load(music_path)
+        # pygame.mixer.music.play(-1)
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
         print(f'\n{welcome_text}')
