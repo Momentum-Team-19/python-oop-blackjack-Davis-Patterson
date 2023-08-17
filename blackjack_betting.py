@@ -150,7 +150,21 @@ class Game:
 
     def __str__(self):
         return self.name
-    
+
+    def check_player_money(self):
+        if self.player.money <= 0:
+            while True:
+                get_money = input("You're out of money. Withdraw more? (y/n) > ").lower()
+                if get_money == 'y' or get_money == '':
+                    self.player.money += 50
+                    print(f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
+                    break
+                elif get_money == 'n':
+                    print("Thank you for playing!")
+                    break
+                else:
+                    print("It is suggested that you visit an ATM.")
+
     def place_bet(self, player):
         while True:
             try:
@@ -212,8 +226,8 @@ class Game:
         self.player.total = self.calc_hand(self.player.hand)
         self.player.show_hand()
         print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
-        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-        print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
+        print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
 
 
     def calc_hand(self, hand):
@@ -233,11 +247,11 @@ class Game:
         return total
 
     def hit_hand(self, hand, total):
-        while total <= 21: 
+        while total < 21:
             if not self.deck.cards:
                 print('No more cards\n')
                 break
-            
+
             if total <= 9:
                 hit_input = input(f"Hit on this {Fore.GREEN}{total}{Fore.WHITE} hand?\n[Enter] to hit, [S] to stay > ").lower().strip()
             if total > 9 and total <= 15:
@@ -259,8 +273,8 @@ class Game:
                 print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
                 if self.player.hand2:
                     print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-                print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-                print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
+                print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
             elif hit_input == 's' or hit_input == 'n':
                 print('\n')
                 break
@@ -286,8 +300,8 @@ class Game:
             print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
             if self.player.hand2:
                 print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-            print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-            print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
+            print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+            print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
 
             print('...')
             time.sleep(1)
@@ -324,7 +338,6 @@ class Game:
 
     def play_game(self):
         play_flag = True
-        split_hit = False
         while play_flag:
             self.player.total = 0
             self.dealer.total = 0
@@ -336,67 +349,53 @@ class Game:
             self.player.pre_deal()
             print(f"{self.player.name}'s total: {Fore.CYAN}?{Fore.WHITE}")
             print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+
             self.place_bet(self.player)
             self.place_bet(self.dealer)
 
             os.system('clear')
             self.play_hand()
+            if self.player.total <= 21:
+                if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
+                    split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
+                    if split_decision != 'n':
+                        self.split_hand()
+                        os.system('clear')
+                        self.dealer.show_hand(initial=True)
+                        self.player.show_hand()
+                        additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
+                        self.player.money -= additional_bet
+                        self.pot += additional_bet
+                        print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                        if self.player.hand2:
+                            print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+                        print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    else:
+                        os. system('clear')
+                        self.dealer.show_hand(initial=True)
+                        self.player.show_hand()
+                        print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                        print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
 
-            if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
-                split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
-                if split_decision == 'y':
-                    self.split_hand()
-                    os.system('clear')
-                    self.dealer.show_hand(initial=True)
-                    self.player.show_hand()
-                    print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
-                    if self.player.hand2:
-                        print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-                    print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
-                if split_decision == 'n':
-                    os. system('clear')
-                    self.dealer.show_hand(initial=True)
-                    self.player.show_hand()
-                    print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
-                    print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
+# if player == self.dealer:
+#                     bet = self.pot  # Match the player's bet
+#                 else:
+#                     bet = int(input(f"Enter your bet: > $"))
+
+#                 if 0 <= bet <= player.money:
+#                     player.money -= bet
+#                     self.pot += bet
+#                     break
 
             if self.player.total < 21:
                 self.player.total = self.hit_hand(self.player.hand, self.player.total)
             if self.player.hand2 and self.player.total2 < 21:
                 self.player.total2 = self.hit_hand(self.player.hand2, self.player.total2)
-                split_hit = True
-                if self.player.total <= 21 and self.dealer.total <= 16:
-                    self.dealer.total = self.dealer_hit()
-
-            if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])) and not self.player.hand2:
-                split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
-                if split_decision == 'y':
-                    self.split_hand()
-                    os.system('clear')
-                    self.dealer.show_hand(initial=True)
-                    self.player.show_hand()
-                    print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
-                    if self.player.hand2:
-                        print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-                    print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
-                if split_decision == 'n':
-                    os. system('clear')
-                    self.dealer.show_hand(initial=True)
-                    self.player.show_hand()
-                    print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
-                    print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}')
-                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}\n')
-
-            if split_hit == False:
-                if self.player.hand2 and self.player.total < 21:
-                    self.player.total = self.hit_hand(self.player.hand, self.player.total)
-                if self.player.hand2 and self.player.total2 < 21:
-                    self.player.total2 = self.hit_hand(self.player.hand2, self.player.total2)
-                if self.player.total <= 21 and self.dealer.total <= 16:
-                    self.dealer.total = self.dealer_hit()
+            if self.player.total <= 21 and self.dealer.total <= 16:
+                self.dealer.total = self.dealer_hit()
+            
 
             os.system('clear')
 
@@ -405,11 +404,11 @@ class Game:
             self.player.total = self.calc_hand(self.player.hand)
             if self.dealer.total >= 22:
                 dealer_total_color = Fore.RED
-            elif self.player.total > 21 and self.dealer.total <= 21:
+            elif self.player.total > 21 and self.player.total2 > 21 and self.dealer.total <= 21:
                 dealer_total_color = Fore.GREEN
-            elif self.dealer.total > self.player.total and self.dealer.total <= 21:
+            elif (self.dealer.total > self.player.total and self.dealer.total <= 21) and (self.dealer.total > self.player.total2 and self.dealer.total <= 21):
                 dealer_total_color = Fore.GREEN
-            elif self.dealer.total < self.player.total and self.player.total <= 21:
+            elif (self.dealer.total < self.player.total and self.player.total <= 21) or (self.dealer.total < self.player.total2 and self.player.total <= 21):
                 dealer_total_color = Fore.RED
             else:
                 dealer_total_color = Fore.RED
@@ -464,18 +463,27 @@ class Game:
             print('...\n')
 
             while True:
+                if self.player.money <= 0:
+                    self.check_player_money()
+                    print('...\n')
+                    time.sleep(.5)
                 play_again = input(
                     "[Enter] to play again, 'Q' to quit > ").lower().strip()
                     
                 if play_again != 'q':
-                    reset_game = pyfiglet.figlet_format(text='Reset!', font='smslant')
+                    os.system('clear')
+                    reset_game = pyfiglet.figlet_format(text='Dealing\nNew\nCards!', font='chunky')
                     print(f'\n{reset_game}')
+                    time.sleep(.5)
+                    Menu.print_texture(self, texture1)
+                    time.sleep(.2)
+                    print('\n')
+                    Menu.print_texture(self, cards_txt)
                     time.sleep(.5)
                     self.clear_cards()
                     self.player.total = 0
                     self.player.total2 = 0
                     self.dealer.total = 0
-                    split_hit = False
                     break
 
                 else:
