@@ -74,7 +74,7 @@ class Player:
         self.total = 0
         self.total2 = 0
         self.score = 0
-        self.money = 50
+        self.money = Menu.load_money(self)
 
     def __str__(self):
         return self.name
@@ -157,13 +157,14 @@ class Game:
                 get_money = input("You're out of money. Withdraw more? (y/n) > ").lower()
                 if get_money == 'y' or get_money == '':
                     self.player.money += 50
+                    Menu.save_money(self, self.player.money)
                     print(f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
                     break
                 elif get_money == 'n':
-                    print("Thank you for playing!")
+                    Menu.save_money(self, self.player.money)
                     break
                 else:
-                    print("It is suggested that you visit an ATM.")
+                    print("\nIt is suggested that you visit an ATM.\n")
 
     def place_bet(self, player):
         while True:
@@ -365,6 +366,7 @@ class Game:
                         self.player.show_hand()
                         additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
                         self.player.money -= additional_bet
+                        Menu.save_money(self, self.player.money)
                         self.pot += additional_bet
                         print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
                         if self.player.hand2:
@@ -444,17 +446,20 @@ class Game:
             if winner == f'{self.player.name}':
                 self.player.score += 1
                 self.player.money += self.pot
+                Menu.save_money(self, self.player.money)
                 print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived {Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Dealer':
                 self.dealer.score += 1
                 self.dealer.money += self.pot
+                Menu.save_money(self, self.player.money)
                 print(f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Draw':
                 share_pot = self.pot / 2
                 self.player.money += share_pot
                 self.dealer.money += share_pot
+                Menu.save_money(self, self.player.money)
                 print(
                     f'Draw! There is no winner :(\nEach player had a total of {Fore.RED}{self.player.total}{Fore.WHITE}\n')
                 self.pot = 0
@@ -481,6 +486,7 @@ class Game:
                     Menu.print_texture(self, cards_txt)
                     time.sleep(.5)
                     self.clear_cards()
+                    Menu.save_money(self, self.player.money)
                     self.player.total = 0
                     self.player.total2 = 0
                     self.dealer.total = 0
@@ -490,6 +496,7 @@ class Game:
                     time.sleep(.5)
                     print('\n...\n')
                     time.sleep(.5)
+                    Menu.save_money(self, self.player.money)
                     play_flag = False
                     break
 
@@ -526,7 +533,7 @@ class Menu:
                 print(f"The Dealer's score is: {new_game.dealer.score}")
 
             if menu_choice == 'w':
-                self.display_wallet(new_game.player)
+                self.display_wallet()
 
             elif menu_choice == 's':
                 time.sleep(.5)
@@ -604,8 +611,18 @@ class Menu:
         for line_number in texture:
             print(texture[line_number])
 
-    def display_wallet(self, player):
-        print(f"\n{player.name}'s available balance: ${Fore.GREEN}{player.money}{Fore.WHITE}\n")
+    def display_wallet(self):
+        with open('player_money.txt', 'r') as file:
+            player_money = int(file.read().strip())
+        print(f"\nYour available balance: ${Fore.GREEN}{player_money}{Fore.WHITE}\n")
+
+    def save_money(self, money):
+        with open('player_money.txt', 'w') as file:
+            file.write(str(money))
+
+    def load_money(self):
+        with open('player_money.txt', 'r') as file:
+            return int(file.read().strip())
 
 
 if __name__ == "__main__":
