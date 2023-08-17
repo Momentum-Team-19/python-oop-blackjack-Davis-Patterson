@@ -119,7 +119,7 @@ class Game:
     def __init__(self):
         self.name = 'Blackjack'
         self.deck = Deck()
-        # self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
+        #  self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         self.player = Player(input('What is your name? > '))
         self.dealer = Dealer()
 
@@ -127,19 +127,22 @@ class Game:
         return self.name
     
     def split_hand(self):
-        if len(self.player.hand) == 2 and self.player.hand[0].rank == self.player.hand[1].rank:
-            self.player.hand2.append(self.player.hand.pop())  # Move one card to the second hand
+        if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
+            self.player.hand2.append(self.player.hand.pop())
             self.deal_card(self.player.hand)
             self.deal_card(self.player.hand2)
 
-            self.player.total2 = self.calc_hand(self.player.hand2)  # Calculate total for second hand
-            self.player.total = self.calc_hand(self.player.hand)  # Recalculate total for the original hand
+            self.player.total2 = self.calc_hand(self.player.hand2)
+            self.player.total = self.calc_hand(self.player.hand)
 
     def clear_cards(self):
         self.deck.used_cards.extend(self.player.hand)
         self.deck.used_cards.extend(self.dealer.hand)
         self.player.hand.clear()
         self.dealer.hand.clear()
+        if self.player.hand2:
+            self.deck.used_cards.extend(self.player.hand2)
+            self.player.hand2.clear()
 
     def deal_card(self, hand):
         if not self.deck.cards:
@@ -185,14 +188,17 @@ class Game:
 
         return total
 
-    def hit_hand(self, hand):
-        while self.calc_hand(hand) < 21:
+    def hit_hand(self, hand, total):
+        while total <= 21: 
             if not self.deck.cards:
                 print('No more cards\n')
                 break
+            
+            if total <= 14:
+                hit_input = input(f"Do you want to hit on this {Fore.GREEN}{total}{Fore.WHITE} hand? (y/n) > ").lower().strip()
+            if total >= 15:
+                hit_input = input(f"Do you want to hit on this {Fore.RED}{total}{Fore.WHITE} hand? (y/n) > ").lower().strip()
 
-            hit_input = input(
-                f"Do you want to hit on this hand? (y/n) > ").lower().strip()
             if hit_input == 'n':
                 print('\n')
                 break
@@ -204,6 +210,7 @@ class Game:
                 self.dealer.show_hand(initial=True)
                 self.dealer.total = self.calc_hand(self.dealer.hand)
                 self.player.total = self.calc_hand(self.player.hand)
+                total = self.calc_hand(hand)  # Update the hand total here
                 if self.player.hand2:
                     self.player.total2 = self.calc_hand(self.player.hand2)
                 self.player.show_hand()
@@ -212,12 +219,11 @@ class Game:
                     print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
 
             else:
-                invalid_text = pyfiglet.figlet_format(
-                    text='INVALID', font='small')
+                invalid_text = pyfiglet.figlet_format(text='INVALID', font='small')
                 print(f'{Fore.RED}{invalid_text}')
                 print("Please enter either 'y' or 'n'\n")
 
-        return self.calc_hand(hand)
+        return total
 
     def dealer_hit(self):
         while self.dealer.total < 16:
@@ -271,6 +277,7 @@ class Game:
 
     def play_game(self):
         play_flag = True
+        split_hit = False
         while play_flag:
             self.player.total = 0
             self.dealer.total = 0
@@ -280,23 +287,43 @@ class Game:
 
             self.play_hand()
 
-            if len(self.player.hand) == 2 and self.player.hand[0].rank == self.player.hand[1].rank:
+            if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
                 split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
                 if split_decision == 'y':
                     self.split_hand()
                     os.system('clear')
-                    self.dealer.show_hand()
+                    self.dealer.show_hand(initial=True)
                     self.player.show_hand()
                     print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
                     if self.player.hand2:
                         print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
 
             if self.player.total < 21:
-                self.player.total = self.hit_hand(self.player.hand)
+                self.player.total = self.hit_hand(self.player.hand, self.player.total)
             if self.player.hand2 and self.player.total2 < 21:
-                self.player.total2 = self.hit_hand(self.player.hand2)
-            if self.player.total <= 21 and self.dealer.total <= 16:
-                self.dealer.total = self.dealer_hit()
+                self.player.total2 = self.hit_hand(self.player.hand2, self.player.total2)
+                split_hit = True
+                if self.player.total <= 21 and self.dealer.total <= 16:
+                    self.dealer.total = self.dealer_hit()
+            
+            if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
+                split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
+                if split_decision == 'y':
+                    self.split_hand()
+                    os.system('clear')
+                    self.dealer.show_hand(initial=True)
+                    self.player.show_hand()
+                    print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                    if self.player.hand2:
+                        print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+
+            if split_hit == False:
+                if self.player.hand2 and self.player.total < 21:
+                    self.player.total = self.hit_hand(self.player.hand, self.player.total)
+                if self.player.hand2 and self.player.total2 < 21:
+                    self.player.total2 = self.hit_hand(self.player.hand2, self.player.total2)
+                if self.player.total <= 21 and self.dealer.total <= 16:
+                    self.dealer.total = self.dealer_hit()
 
             os.system('clear')
 
@@ -357,37 +384,32 @@ class Game:
 
             while True:
                 play_again = input(
-                    'Do you want to play again? (y/n) > ').lower().strip()
-                if play_again == 'n':
-                    time.sleep(.5)
-                    print('\n...\n')
-                    time.sleep(.5)
-                    play_flag = False
-                    break
-                elif play_again == 'y':
+                    "[Enter] to play again, 'Q' to quit > ").lower().strip()
+                    
+                if play_again != 'q':
                     resetting_game = pyfiglet.figlet_format(text='Resetting', font='smslant')
                     print(f'\n{resetting_game}')
                     time.sleep(.5)
                     self.clear_cards()
                     self.player.total = 0
+                    self.player.total2 = 0
                     self.dealer.total = 0
+                    split_hit = False
                     break
 
                 else:
-                    invalid_text = pyfiglet.figlet_format(
-                    text='IVALID', font='small')
-                    print(f'{Fore.RED}{invalid_text}')
-                    print("Please enter 'y' or 'n'")
-                    invalid_text = pyfiglet.figlet_format(
-                        text='IVALID', font='small')
-                    print(f'{Fore.RED}{invalid_text}')
+                    time.sleep(.5)
+                    print('\n...\n')
+                    time.sleep(.5)
+                    play_flag = False
+                    break
 
 
 class Menu:
     def __init__(self):
         os.system('clear')
-        # pygame.mixer.music.load(music_path)
-        # pygame.mixer.music.play(-1)
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.play(-1)
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
         print(f'\n{welcome_text}')
