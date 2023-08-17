@@ -32,6 +32,7 @@ CARD_FORMATS = {
     '♣': f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 }
 
+
 class Card:
     def __init__(self, rank, suit):
         self.suit = suit
@@ -85,7 +86,7 @@ class Player:
             hand_line = '  '.join([card_imgs[str(card)][line] for card in self.hand])
             print(hand_line)
         print()
-        
+
         if self.hand2: 
             print(f"{self.name}'s second hand: ")
             for line in range(7):
@@ -111,7 +112,7 @@ class Dealer():
 
     def __str__(self):
         return self.name
-    
+
     def show_hand(self, initial=False):
         card_imgs['?'] = blank_card
         print(f"{self.name}'s hand:")
@@ -154,7 +155,8 @@ class Game:
     def check_player_money(self):
         if self.player.money <= 0:
             while True:
-                get_money = input("You're out of money. Withdraw more? (y/n) > ").lower()
+                get_money = input(
+                    "You're out of money. Withdraw more? (y/n) > ").lower()
                 if get_money == 'y' or get_money == '':
                     self.player.money += 50
                     Menu.save_money(self, self.player.money)
@@ -173,7 +175,7 @@ class Game:
                     bet = self.pot  # Match the player's bet
                 else:
                     bet = int(input(f"Enter your bet: > $"))
-                
+
                 if 0 <= bet <= player.money:
                     player.money -= bet
                     self.pot += bet
@@ -182,7 +184,7 @@ class Game:
                     print("Invalid bet amount. Please enter a valid amount.")
             except ValueError:
                 print("Invalid input. Please enter a valid bet amount.")
-    
+
     def split_hand(self):
         if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
             self.player.hand2.append(self.player.hand.pop())
@@ -229,7 +231,6 @@ class Game:
         print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
         print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
         print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
-
 
     def calc_hand(self, hand):
         total = 0
@@ -397,7 +398,6 @@ class Game:
                 self.player.total2 = self.hit_hand(self.player.hand2, self.player.total2)
             if self.player.total <= 21 and self.dealer.total <= 16:
                 self.dealer.total = self.dealer_hit()
-            
 
             os.system('clear')
 
@@ -474,7 +474,7 @@ class Game:
                     time.sleep(.5)
                 play_again = input(
                     "[Enter] to play again, 'Q' to quit > ").lower().strip()
-                    
+
                 if play_again != 'q':
                     os.system('clear')
                     reset_game = pyfiglet.figlet_format(text='Dealing\nNew\nCards!', font='chunky')
