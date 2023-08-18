@@ -24,7 +24,7 @@ music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 #     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 # ]
 SUITS = ['♠', '❤', '♦', '♣']
-RANKS = ['2', '3', '2', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_FORMATS = {
     '♠': f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
     '❤': f'{Fore.RED}❤{Fore.WHITE}',
@@ -153,7 +153,7 @@ class Game:
         self.dealer = Dealer()
         self.pot = 0
         self.deck = Deck()
-        # self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
+        self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         self.shuffle_animation(5)
 
     def __str__(self):
