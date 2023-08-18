@@ -862,8 +862,8 @@ class Menu:
     def __init__(self):
         os.system('clear')
 
-        # pygame.mixer.music.load(music_path)
-        # pygame.mixer.music.play(-1)
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.play(-1)
 
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
