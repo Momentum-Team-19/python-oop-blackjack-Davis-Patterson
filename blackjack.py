@@ -181,7 +181,10 @@ class Game:
                 if player == self.dealer:
                     bet = self.pot  # Match the player's bet
                 else:
-                    bet = int(input(f"Enter your bet: > $"))
+                    bet = (input(f"Enter your bet: > $"))
+
+                if bet == '':
+                    bet = 0
 
                 if 0 <= bet <= player.money:
                     player.money -= bet
@@ -211,7 +214,7 @@ class Game:
 
     def deal_card(self, hand):
         if not self.deck.cards:
-            print('Reshuffling the deck')  # <= RESHUFFLES DECK WHEN EMPTY
+            self.shuffle_animation()  # <= RESHUFFLES DECK WHEN EMPTY
             self.table_count = 0  # <= RESETS TABLE COUNT/STATUS
             self.table_status = 'neutral'
             time.sleep(.5)
@@ -226,6 +229,20 @@ class Game:
         self.calc_table_count(card)
         self.eval_count()
         return card
+
+    def shuffle_animation(self, iterations=5):
+        colors = [Fore.RED, Fore.YELLOW, Fore.BLUE,
+                  Fore.GREEN, Fore.MAGENTA, Fore.CYAN, Fore.WHITE]
+
+        for _ in range(iterations):
+            for color in colors:
+                os.system('clear')
+                shuffling_text = pyfiglet.figlet_format(
+                    text='Shuffling', font='cybermedium')
+                # print(f'{color}{shuffling_text}{Fore.WHITE}')
+                print(f'{color}Reshuffling the deck!{Fore.WHITE}')
+                time.sleep(.06)
+        print()
 
     def deal_hand(self):
         self.deal_card(self.player.hand)
@@ -862,8 +879,8 @@ class Menu:
     def __init__(self):
         os.system('clear')
 
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.load(music_path)
+        # pygame.mixer.music.play(-1)
 
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
@@ -901,15 +918,17 @@ class Menu:
                 settings_text = pyfiglet.figlet_format(
                     text="Settings", font="small")
                 print(settings_text)
-                print('Options:\n[V]olume settings\n[R]ender cards\n[E]xit\n')
+                print(
+                    'Options:\n[V]olume settings\n[R]ender cards\n[S]huffle Animation\n[E]xit\n')
                 while True:
                     settings_choice = input(
                         'Please select an option > ').lower().strip()
-                    if settings_choice == 'v':
+                    if settings_choice == 'v' or settings_choice == '':
                         while True:
                             volume_input = input(
                                 "Enter volume value (0.0 - 1.0) > ")
-
+                            if volume_input == '':
+                                volume_input == 0.0
                             try:
                                 volume = float(volume_input)
                                 if 0.0 <= volume <= 1.0:
@@ -942,6 +961,19 @@ class Menu:
                         print('...')
                         time.sleep(.5)
                         self.view_all_cards()
+
+                    if settings_choice == 's':
+                        animation_flag = True
+                        while animation_flag:
+                            Game.shuffle_animation(self)
+                            loop_animation = input(
+                                'Replay? [y/n] >').strip().lower()
+                            if loop_animation != 'n':
+                                continue
+                            else:
+                                animation_flag = False
+                                break
+                        break
 
                     if settings_choice == 'e':
                         break
