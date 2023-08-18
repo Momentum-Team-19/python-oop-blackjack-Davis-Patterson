@@ -24,7 +24,7 @@ music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 #     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 # ]
 SUITS = ['♠', '❤', '♦', '♣']
-RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+RANKS = ['2', '3', '2', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_FORMATS = {
     '♠': f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
     '❤': f'{Fore.RED}❤{Fore.WHITE}',
@@ -153,7 +153,7 @@ class Game:
         self.dealer = Dealer()
         self.pot = 0
         self.deck = Deck()
-        self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
+        # self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         self.shuffle_animation(5)
 
     def __str__(self):
@@ -880,8 +880,8 @@ class Menu:
     def __init__(self):
         os.system('clear')
 
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play(-1)  # <= TURN MUSIC ON AND OFF
+        # pygame.mixer.music.load(music_path)
+        # pygame.mixer.music.play(-1)  # <= TURN MUSIC ON AND OFF
 
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
@@ -998,7 +998,8 @@ class Menu:
         return 'Menu'
 
     def view_all_cards(self):
-        print(f'Deck has {Fore.GREEN}{len(card_imgs)}{Fore.WHITE} cards\n')
+        print(
+            f'Deck has {Fore.GREEN}{len(card_imgs)-1}{Fore.WHITE} cards +1 blank card\n')
         for card_name, card_data in card_imgs.items():
             # color_formatted_card_suit = f'{Fore.}'
             print(f"Card: {card_name}")
