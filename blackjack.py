@@ -24,7 +24,7 @@ music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 #     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 # ]
 SUITS = ['♠', '❤', '♦', '♣']
-RANKS = ['A', '2', 'A', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 CARD_FORMATS = {
     '♠': f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
     '❤': f'{Fore.RED}❤{Fore.WHITE}',
@@ -140,8 +140,10 @@ class Dealer():
 class Game:
     def __init__(self):
         self.name = 'Blackjack'
+        self.table_count = 0
+        self.table_status = 'neutral'
         self.deck = Deck()
-        # self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
+        self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         while True:
             name = input('\nWhat is your name? > ')
             if name == '':
@@ -195,7 +197,6 @@ class Game:
             self.player.hand2.append(self.player.hand.pop())
             self.deal_card(self.player.hand)
             self.deal_card(self.player.hand2)
-
             self.player.total2 = self.calc_hand(self.player.hand2)
             self.player.total = self.calc_hand(self.player.hand)
 
@@ -211,6 +212,8 @@ class Game:
     def deal_card(self, hand):
         if not self.deck.cards:
             print('Reshuffling the deck')  # <= RESHUFFLES DECK WHEN EMPTY
+            self.table_count = 0  # <= RESETS TABLE COUNT/STATUS
+            self.table_status = 'neutral'
             time.sleep(.5)
             print('...')
             time.sleep(.5)
@@ -220,8 +223,11 @@ class Game:
 
         card = self.deck.cards.pop(0)
         hand.append(card)
+        self.calc_table_count(card)
+        self.eval_count()
+        return card
 
-    def play_hand(self):
+    def deal_hand(self):
         self.deal_card(self.player.hand)
         self.deal_card(self.dealer.hand)
         self.deal_card(self.player.hand)
@@ -233,11 +239,31 @@ class Game:
         self.dealer.total = self.calc_hand(self.dealer.hand)
         self.player.total = self.calc_hand(self.player.hand)
         self.player.show_hand()
+
         print(
             f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
+        if self.table_status == 'very cold':
+            print(
+                f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+        if self.table_status == 'cold':
+            print(
+                f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+        if self.table_status == 'neutral':
+            print(
+                f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+        if self.table_status == 'hot':
+            print(
+                f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+        if self.table_status == 'very hot':
+            print(
+                f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+        if self.table_status == 'extremely hot':
+            print(
+                f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
         print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
         print(
-            f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+            f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
 
     def calc_hand(self, hand):
         total = 0
@@ -287,9 +313,29 @@ class Game:
                 if self.player.hand2:
                     print(
                         f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+
+                if self.table_status == 'very cold':
+                    print(
+                        f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+                if self.table_status == 'cold':
+                    print(
+                        f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'neutral':
+                    print(
+                        f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'hot':
+                    print(
+                        f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'very hot':
+                    print(
+                        f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+                if self.table_status == 'extremely hot':
+                    print(
+                        f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
                 print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
                 print(
-                    f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
             else:
                 print('\n')
                 break
@@ -314,9 +360,29 @@ class Game:
             if self.player.hand2:
                 print(
                     f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+
+            if self.table_status == 'very cold':
+                print(
+                    f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+            if self.table_status == 'cold':
+                print(
+                    f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+            if self.table_status == 'neutral':
+                print(
+                    f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+            if self.table_status == 'hot':
+                print(
+                    f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+            if self.table_status == 'very hot':
+                print(
+                    f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+            if self.table_status == 'extremely hot':
+                print(
+                    f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
             print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
             print(
-                f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
 
             print('...')
             time.sleep(1)
@@ -396,9 +462,29 @@ class Game:
                 if self.player.hand2:
                     print(
                         f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+
+                if self.table_status == 'very cold':
                     print(
-                        f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                        f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+                if self.table_status == 'cold':
+                    print(
+                        f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'neutral':
+                    print(
+                        f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'hot':
+                    print(
+                        f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'very hot':
+                    print(
+                        f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+                if self.table_status == 'extremely hot':
+                    print(
+                        f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
+                print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                print(
+                    f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
                 print('...\n')
                 time.sleep(.5)
                 return True
@@ -419,11 +505,56 @@ class Game:
                 if self.player.hand2:
                     print(
                         f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+
+                if self.table_status == 'very cold':
                     print(
-                        f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                        f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+                if self.table_status == 'cold':
+                    print(
+                        f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'neutral':
+                    print(
+                        f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'hot':
+                    print(
+                        f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                if self.table_status == 'very hot':
+                    print(
+                        f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+                if self.table_status == 'extremely hot':
+                    print(
+                        f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
+                print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                print(
+                    f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
                 print('...\n')
                 return False
+
+    def calc_table_count(self, card):
+        rank = card.rank
+        if rank in ['A', 'K', 'Q', 'J', '10']:
+            self.table_count -= 1
+        elif rank in ['7', '8', '9']:
+            pass
+        elif rank in ['1', '2', '3', '4', '5', '6']:
+            self.table_count += 1
+        else:
+            print("Can't update count")
+
+    def eval_count(self):
+        if self.table_count < -5:
+            self.table_status = 'very cold'
+        elif -5 <= self.table_count <= -1:
+            self.table_status = 'cold'
+        elif 0 < self.table_count < 0:
+            self.table_status = 'neutral'
+        elif 1 <= self.table_count <= 4:
+            self.table_status = 'hot'
+        elif 4 <= self.table_count < 6:
+            self.table_status = 'very hot'
+        else:
+            self.table_status = 'extremely hot'
 
     def play_game(self):
         play_flag = True
@@ -438,15 +569,36 @@ class Game:
 
             self.dealer.pre_deal()
             self.player.pre_deal()
-            print(f"Your hand total: {Fore.CYAN}?{Fore.WHITE}")
+            print(f"Your hand total: {Fore.CYAN}?{Fore.WHITE}\n")
+
+            if self.table_status == 'very cold':
+                print(
+                    f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+            if self.table_status == 'cold':
+                print(
+                    f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+            if self.table_status == 'neutral':
+                print(
+                    f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+            if self.table_status == 'hot':
+                print(
+                    f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+            if self.table_status == 'very hot':
+                print(
+                    f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+            if self.table_status == 'extremely hot':
+                print(
+                    f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
             print(
-                f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
 
             self.place_bet(self.player)
             self.place_bet(self.dealer)
 
             os.system('clear')
-            self.play_hand()
+
+            self.deal_hand()
 
             if self.player.total <= 21:
                 if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
@@ -455,6 +607,7 @@ class Game:
                     if split_decision != 'n':
                         self.split_hand()
                         os.system('clear')
+
                         self.dealer.show_hand(initial=True)
                         self.player.show_hand()
                         additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
@@ -466,10 +619,30 @@ class Game:
                         if self.player.hand2:
                             print(
                                 f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+
+                        if self.table_status == 'very cold':
+                            print(
+                                f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+                        if self.table_status == 'cold':
+                            print(
+                                f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                        if self.table_status == 'neutral':
+                            print(
+                                f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                        if self.table_status == 'hot':
+                            print(
+                                f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                        if self.table_status == 'very hot':
+                            print(
+                                f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+                        if self.table_status == 'extremely hot':
+                            print(
+                                f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
                         print(
                             f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
                         print(
-                            f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                            f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
                         print('...\n')
                     else:
                         os. system('clear')
@@ -477,10 +650,30 @@ class Game:
                         self.player.show_hand()
                         print(
                             f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+
+                        if self.table_status == 'very cold':
+                            print(
+                                f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(')
+                        if self.table_status == 'cold':
+                            print(
+                                f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                        if self.table_status == 'neutral':
+                            print(
+                                f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                        if self.table_status == 'hot':
+                            print(
+                                f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.')
+                        if self.table_status == 'very hot':
+                            print(
+                                f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+                        if self.table_status == 'extremely hot':
+                            print(
+                                f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}')
+
                         print(
                             f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
                         print(
-                            f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                            f'Current wallet: {Style.BRIGHT}${Fore.GREEN}{self.player.money}{Style.NORMAL}{Fore.WHITE}\n')
                         print('...\n')
 
             double_down_has_ace = False
@@ -560,7 +753,7 @@ class Game:
             else:
                 player_total_color = Fore.RED
             print(
-                f"Your hand total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
+                f"Your final hand total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
 
             if self.player.total2 > 0:
                 if self.player.total2 >= 22:
@@ -576,19 +769,38 @@ class Game:
                 print(
                     f"Your 2nd final total: {player_total2_color}{self.player.total2}{Fore.WHITE}\n")
 
+            if self.table_status == 'very cold':
+                print(
+                    f'Count: {Fore.BLUE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.BLUE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL} :(\n')
+            if self.table_status == 'cold':
+                print(
+                    f'Count: {Fore.CYAN}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Style.BRIGHT}{Fore.CYAN}{self.table_status}{Fore.WHITE}{Style.NORMAL}.\n')
+            if self.table_status == 'neutral':
+                print(
+                    f'Count: {Fore.WHITE}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.WHITE}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.\n')
+            if self.table_status == 'hot':
+                print(
+                    f'Count: {Fore.RED}{Style.BRIGHT}{self.table_count}{Fore.WHITE}{Style.NORMAL} table is {Fore.RED}{Style.BRIGHT}{self.table_status}{Fore.WHITE}{Style.NORMAL}.\n')
+            if self.table_status == 'very hot':
+                print(
+                    f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}\n')
+            if self.table_status == 'extremely hot':
+                print(
+                    f'{Style.BRIGHT}Count: {Fore.RED}{self.table_count}{Fore.WHITE} table is {Fore.RED}{self.table_status}{Fore.WHITE}!!{Style.NORMAL}\n')
+
             winner = self.eval_hands()
             if winner == f'{self.player.name}':
                 self.player.score += 1
                 self.player.money += self.pot
                 Menu.save_money(self, self.player.money)
-                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived {Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: +{Fore.GREEN}{self.pot}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived ${Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: +${Fore.GREEN}{self.pot}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Dealer':
                 self.dealer.score += 1
                 self.dealer.money += self.pot
                 Menu.save_money(self, self.player.money)
                 print(
-                    f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: -{Fore.RED}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: -${Fore.RED}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Draw':
                 share_pot = self.pot / 2
@@ -596,7 +808,7 @@ class Game:
                 self.dealer.money += share_pot
                 Menu.save_money(self, self.player.money)
                 print(
-                    f'Draw! There is no winner :(\nUpdated wallet: +{Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Draw! There is no winner :(\nUpdated wallet: +${Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == None:
                 share_pot = self.pot / 2
@@ -604,7 +816,7 @@ class Game:
                 self.dealer.money += share_pot
                 Menu.save_money(self, self.player.money)
                 print(
-                    f'Could not determine a winner.\nRound {Fore.RED}terminated{Fore.WHITE} :(\nUpdated wallet: +{Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Could not determine a winner.\nRound {Fore.RED}terminated{Fore.WHITE} :(\nUpdated wallet: +${Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
             time.sleep(.5)
             print('...\n')
 
@@ -618,6 +830,7 @@ class Game:
 
                 if play_again != 'q':
                     os.system('clear')
+
                     reset_game = pyfiglet.figlet_format(
                         text='Dealing\nNew\nCards!', font='chunky')
                     print(f'\n{reset_game}')
@@ -648,8 +861,9 @@ class Game:
 class Menu:
     def __init__(self):
         os.system('clear')
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play(-1)
+
+        # pygame.mixer.music.load(music_path)
+        # pygame.mixer.music.play(-1)
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
         print(f'\n{welcome_text}')
@@ -764,9 +978,9 @@ class Menu:
 
     def display_wallet(self):
         with open('player_money.txt', 'r') as file:
-            player_money = int(file.read().strip())
+            player_money = float(file.read().strip())
         print(
-            f"\nYour available balance: ${Fore.GREEN}{player_money}{Fore.WHITE}\n")
+            f"\nYour available balance: {Style.BRIGHT}${Fore.GREEN}{player_money}{Style.NORMAL}{Fore.WHITE}\n")
 
     def save_money(self, money):
         with open('player_money.txt', 'w') as file:
