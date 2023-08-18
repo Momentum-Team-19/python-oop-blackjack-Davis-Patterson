@@ -148,7 +148,7 @@ class Game:
                 self.player = Player()
                 break
             if name != '':
-                self.player - Player(name)
+                self.player = Player(name)
                 break
         self.dealer = Dealer()
         self.pot = 0
@@ -852,12 +852,12 @@ class Game:
                     reset_game = pyfiglet.figlet_format(
                         text='Dealing\nNew\nCards!', font='chunky')
                     print(f'\n{reset_game}')
-                    time.sleep(.5)
+                    time.sleep(.25)
                     Menu.print_texture(self, texture1)
-                    time.sleep(.2)
+                    time.sleep(.25)
                     print('\n')
                     Menu.print_texture(self, cards_txt)
-                    time.sleep(.5)
+                    time.sleep(.25)
                     self.clear_cards()
                     double_down_flag = False
                     double_down_flag2 = False
