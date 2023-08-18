@@ -24,7 +24,7 @@ music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 #     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 # ]
 SUITS = ['♠', '❤', '♦', '♣']
-RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+RANKS = ['A', '2', 'A', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_FORMATS = {
     '♠': f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
     '❤': f'{Fore.RED}❤{Fore.WHITE}',
@@ -81,21 +81,23 @@ class Player:
         return self.name
 
     def show_hand(self):
-        print(f"{self.name}'s hand:")
+        print(f"{Fore.CYAN}{self.name}'s{Fore.WHITE} hand:")
         for line in range(7):
-            hand_line = '  '.join([card_imgs[str(card)][line] for card in self.hand])
+            hand_line = '  '.join([card_imgs[str(card)][line]
+                                  for card in self.hand])
             print(hand_line)
         print()
 
-        if self.hand2: 
-            print(f"{self.name}'s second hand: ")
+        if self.hand2:
+            print(f"{Fore.CYAN}{self.name}'s{Fore.WHITE} second hand: ")
             for line in range(7):
-                hand_line = '  '.join([card_imgs[str(card)][line] for card in self.hand2])
+                hand_line = '  '.join([card_imgs[str(card)][line]
+                                      for card in self.hand2])
                 print(hand_line)
             print()
 
     def pre_deal(self):
-        print(f"{self.name}'s hand:")
+        print(f"{Fore.CYAN}{self.name}'s{Fore.WHITE} hand:")
         for line in range(7):
             hand_line = '  '.join([card_imgs['?'][line] for _ in range(2)])
             print(hand_line)
@@ -115,18 +117,20 @@ class Dealer():
 
     def show_hand(self, initial=False):
         card_imgs['?'] = blank_card
-        print(f"{self.name}'s hand:")
+        print(f"{Fore.RED}{self.name}'s{Fore.WHITE} hand:")
         for line_num in range(7):
             if initial:
-                hand_line = '  '.join([card_imgs['?'][line_num] if index == 0 else card_imgs[str(card)][line_num] for index, card in enumerate(self.hand)])
+                hand_line = '  '.join([card_imgs['?'][line_num] if index == 0 else card_imgs[str(
+                    card)][line_num] for index, card in enumerate(self.hand)])
             else:
-                hand_line = '  '.join([card_imgs[str(card)][line_num] for card in self.hand])
+                hand_line = '  '.join(
+                    [card_imgs[str(card)][line_num] for card in self.hand])
             print(hand_line)
         print()
 
     def pre_deal(self):
         card_imgs['?'] = blank_card
-        print(f"{self.name}'s hand:")
+        print(f"{Fore.RED}{self.name}'s{Fore.WHITE} hand:")
         for line_num in range(7):
             hand_line = '  '.join([card_imgs['?'][line_num] for _ in range(2)])
             print(hand_line)
@@ -137,7 +141,7 @@ class Game:
     def __init__(self):
         self.name = 'Blackjack'
         self.deck = Deck()
-        self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
+        # self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         while True:
             name = input('\nWhat is your name? > ')
             if name == '':
@@ -156,11 +160,12 @@ class Game:
         if self.player.money <= 0:
             while True:
                 get_money = input(
-                    "You're out of money. Withdraw more? (y/n) > ").lower()
+                    "You're out of money. Withdraw more? [y/n] > ").lower()
                 if get_money == 'y' or get_money == '':
                     self.player.money += 50
                     Menu.save_money(self, self.player.money)
-                    print(f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
+                    print(
+                        f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
                     break
                 elif get_money == 'n':
                     Menu.save_money(self, self.player.money)
@@ -181,9 +186,9 @@ class Game:
                     self.pot += bet
                     break
                 else:
-                    print("Invalid bet amount. Please enter a valid amount.")
+                    print("\nInvalid bet amount. Please enter a valid amount.\n")
             except ValueError:
-                print("Invalid input. Please enter a valid bet amount.")
+                print("\nInvalid input. Please enter a valid bet amount.\n")
 
     def split_hand(self):
         if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
@@ -228,9 +233,11 @@ class Game:
         self.dealer.total = self.calc_hand(self.dealer.hand)
         self.player.total = self.calc_hand(self.player.hand)
         self.player.show_hand()
-        print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
+        print(
+            f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
         print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
-        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+        print(
+            f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
 
     def calc_hand(self, hand):
         total = 0
@@ -255,13 +262,16 @@ class Game:
                 break
 
             if total <= 9:
-                hit_input = input(f"Hit on this {Fore.GREEN}{total}{Fore.WHITE} hand?\n[Enter] to hit, [S] to stay > ").lower().strip()
+                hit_input = input(
+                    f"Hit on this hand with {Fore.GREEN}{total}{Fore.WHITE} total?\n[Enter] to hit, [S] to stay > ").lower().strip()
             if total > 9 and total <= 15:
-                hit_input = input(f"Hit on this {Fore.YELLOW}{total}{Fore.WHITE} hand?\n[Enter] to hit, [S] to stay > ").lower().strip()
+                hit_input = input(
+                    f"Hit on this hand with {Fore.YELLOW}{total}{Fore.WHITE} total?\n[Enter] to hit, [S] to stay > ").lower().strip()
             if total > 15:
-                hit_input = input(f"Hit on this {Fore.RED}{total}{Fore.WHITE} hand?\n[Enter] to hit, [S] to stay > ").lower().strip()
+                hit_input = input(
+                    f"Hit on this hand with {Fore.RED}{total}{Fore.WHITE} total?\n[Enter] to hit, [S] to stay > ").lower().strip()
 
-            if hit_input == '':
+            if hit_input != 's' and hit_input != 'n':
                 self.deal_card(hand)
                 os.system('clear')
 
@@ -272,17 +282,17 @@ class Game:
                 if self.player.hand2:
                     self.player.total2 = self.calc_hand(self.player.hand2)
                 self.player.show_hand()
-                print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                print(
+                    f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
                 if self.player.hand2:
-                    print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+                    print(
+                        f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
                 print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
-                print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
-            elif hit_input == 's' or hit_input == 'n':
+                print(
+                    f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+            else:
                 print('\n')
                 break
-            else:
-                print('Please enter a valid option')
-                print('...')
 
         return total
 
@@ -299,11 +309,14 @@ class Game:
             self.player.total = self.calc_hand(self.player.hand)
 
             self.player.show_hand()
-            print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
+            print(
+                f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}\n")
             if self.player.hand2:
-                print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+                print(
+                    f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
             print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
-            print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+            print(
+                f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
 
             print('...')
             time.sleep(1)
@@ -313,33 +326,109 @@ class Game:
 
     def eval_hands(self):
         self.player.total = self.calc_hand(self.player.hand)
+        if self.player.hand2:
+            self.player.total2 = self.calc_hand(self.player.hand2)
         self.dealer.total = self.calc_hand(self.dealer.hand)
+
         if self.player.total2 == 0:
             if self.player.total > 21:
                 return "Dealer"
             elif self.dealer.total > 21:
                 return self.player.name
-            elif self.player.total > self.dealer.total:
-                return self.player.name
-            elif self.dealer.total > self.player.total:
-                return "Dealer"
-            elif self.player.total == self.dealer.total:
-                return "Draw"
+            elif self.player.total < 22 and self.dealer.total < 22:
+                if self.player.total > self.dealer.total:
+                    return self.player.name
+                elif self.dealer.total > self.player.total:
+                    return "Dealer"
+                else:
+                    return "Draw"
 
         elif self.player.total2 > 0:
             if self.player.total > 21 and self.player.total2 > 21:
                 return "Dealer"
             elif self.dealer.total > 21:
                 return self.player.name
-            elif self.player.total > self.dealer.total or self.player.total2 > self.dealer.total:
-                return self.player.name
-            elif self.dealer.total > self.player.total and self.dealer.total > self.player.total2:
-                return "Dealer"
-            elif self.player.total == self.dealer.total and self.player.total2 == self.dealer.total:
-                return "Draw"
+            elif self.player.total > 21 and self.player.total2 < 22 and self.dealer.total < 22:
+                if self.player.total2 > self.dealer.total:
+                    return self.player.name
+                elif self.dealer.total > self.player.total2:
+                    return "Dealer"
+                else:
+                    return "Draw"
+            elif self.player.total2 > 21 and self.player.total < 22 and self.dealer.total < 22:
+                if self.player.total > self.dealer.total:
+                    return self.player.name
+                elif self.dealer.total > self.player.total:
+                    return "Dealer"
+                else:
+                    return "Draw"
+            elif self.player.total < 22 and self.player.total2 < 22 and self.dealer.total < 22:
+                if self.player.total > self.dealer.total or self.player.total2 > self.dealer.total:
+                    return self.player.name
+                elif self.dealer.total > self.player.total and self.dealer.total > self.player.total2:
+                    return "Dealer"
+                elif (self.player.total2 < self.player.total and self.player.total == self.dealer.total) or (self.player.total < self.player.total2 and self.player.total2 == self.dealer.total):
+                    return "Draw"
+                else:
+                    return None
+
+    def double_down(self, hand, total, double_down_has_ace):
+        while (double_down_has_ace and total < 19) or (not double_down_has_ace and total < 12):
+            double_down = input(
+                f"Double down on this hand with {Fore.GREEN}{total}{Fore.WHITE} total? [y/n] > ").lower().strip()
+            if double_down != 'n':
+                self.deal_card(hand)
+                additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
+                self.player.money -= additional_bet
+                os.system('clear')
+
+                self.dealer.show_hand(initial=True)
+
+                self.dealer.total = self.calc_hand(self.dealer.hand)
+                self.player.total = self.calc_hand(self.player.hand)
+                total = self.calc_hand(hand)  # Update the hand total here
+                if self.player.hand2:
+                    self.player.total2 = self.calc_hand(self.player.hand2)
+
+                self.player.show_hand()
+                print(
+                    f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                if self.player.hand2:
+                    print(
+                        f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                    print(
+                        f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                print('...\n')
+                time.sleep(.5)
+                return True
+            else:
+                os.system('clear')
+
+                self.dealer.show_hand(initial=True)
+
+                self.dealer.total = self.calc_hand(self.dealer.hand)
+                self.player.total = self.calc_hand(self.player.hand)
+                total = self.calc_hand(hand)  # Update the hand total here
+                if self.player.hand2:
+                    self.player.total2 = self.calc_hand(self.player.hand2)
+
+                self.player.show_hand()
+                print(
+                    f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                if self.player.hand2:
+                    print(
+                        f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+                    print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                    print(
+                        f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                print('...\n')
+                return False
 
     def play_game(self):
         play_flag = True
+        double_down_flag = False
+        double_down_flag2 = False
         while play_flag:
             self.player.total = 0
             self.dealer.total = 0
@@ -349,17 +438,20 @@ class Game:
 
             self.dealer.pre_deal()
             self.player.pre_deal()
-            print(f"{self.player.name}'s total: {Fore.CYAN}?{Fore.WHITE}")
-            print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+            print(f"Your hand total: {Fore.CYAN}?{Fore.WHITE}")
+            print(
+                f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
 
             self.place_bet(self.player)
             self.place_bet(self.dealer)
 
             os.system('clear')
             self.play_hand()
+
             if self.player.total <= 21:
                 if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
-                    split_decision = input("Do you want to split your hand? (y/n) > ").lower().strip()
+                    split_decision = input(
+                        "Do you want to split your hand? [y/n] > ").lower().strip()
                     if split_decision != 'n':
                         self.split_hand()
                         os.system('clear')
@@ -369,34 +461,73 @@ class Game:
                         self.player.money -= additional_bet
                         Menu.save_money(self, self.player.money)
                         self.pot += additional_bet
-                        print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                        print(
+                            f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
                         if self.player.hand2:
-                            print(f"{self.player.name}'s 2nd total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
-                        print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
-                        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                            print(
+                                f"Your 2nd hand total: {Fore.CYAN}{self.player.total2}{Fore.WHITE}\n")
+                        print(
+                            f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                        print(
+                            f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                        print('...\n')
                     else:
                         os. system('clear')
                         self.dealer.show_hand(initial=True)
                         self.player.show_hand()
-                        print(f"{self.player.name}'s total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
-                        print(f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
-                        print(f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                        print(
+                            f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
+                        print(
+                            f'Current pot: ${Fore.CYAN}{self.pot}{Fore.WHITE}')
+                        print(
+                            f'Current wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                        print('...\n')
 
-# if player == self.dealer:
-#                     bet = self.pot  # Match the player's bet
-#                 else:
-#                     bet = int(input(f"Enter your bet: > $"))
+            double_down_has_ace = False
+            for card in self.player.hand:
+                rank = card.rank.upper()
+                if rank == 'A':
+                    double_down_has_ace = True
 
-#                 if 0 <= bet <= player.money:
-#                     player.money -= bet
-#                     self.pot += bet
-#                     break
+            if double_down_has_ace:
+                if self.player.total < 19:
+                    #  FIRST DOUBLE DOWN SEQUENCE
+                    double_down_flag = self.double_down(self.player.hand,
+                                                        self.player.total, double_down_has_ace)
+            if not double_down_has_ace:
+                if self.player.total < 12:
+                    double_down_flag = self.double_down(self.player.hand,
+                                                        self.player.total, double_down_has_ace)
 
-            if self.player.total < 21:
-                self.player.total = self.hit_hand(self.player.hand, self.player.total)
-            if self.player.hand2 and self.player.total2 < 21:
-                self.player.total2 = self.hit_hand(self.player.hand2, self.player.total2)
-            if self.player.total <= 21 and self.dealer.total <= 16:
+            double_down_has_ace2 = False
+            for card in self.player.hand2:
+                rank = card.rank.upper()
+                if rank == 'A':
+                    double_down_has_ace2 = True
+
+            if self.player.hand2:
+                if double_down_has_ace2:
+                    if self.player.total2 < 19:
+                        #  FIRST DOUBLE DOWN SEQUENCE
+                        double_down_flag2 = self.double_down(
+                            self.player.hand2, self.player.total2, double_down_has_ace)
+
+                if not double_down_has_ace2:
+                    if self.player.total2 < 12:
+                        double_down_flag2 = self.double_down(
+                            self.player.hand2, self.player.total2, double_down_has_ace)
+
+            if not double_down_flag:
+                if self.player.total < 21:
+                    self.player.total = self.hit_hand(
+                        self.player.hand, self.player.total)
+            if not double_down_flag2:
+                if self.player.hand2:
+                    if self.player.total2 < 21:
+                        self.player.total2 = self.hit_hand(
+                            self.player.hand2, self.player.total2)
+
+            if (self.player.total <= 21 and self.dealer.total <= 16) or (self.player.total2 <= 21 and self.dealer.total <= 16):
                 self.dealer.total = self.dealer_hit()
 
             os.system('clear')
@@ -414,7 +545,8 @@ class Game:
                 dealer_total_color = Fore.RED
             else:
                 dealer_total_color = Fore.RED
-            print(f"{self.dealer.name}'s final total: {dealer_total_color}{self.dealer.total}{Fore.WHITE}\n")
+            print(
+                f"{self.dealer.name}'s final total: {dealer_total_color}{self.dealer.total}{Fore.WHITE}\n")
 
             self.player.show_hand()
             if self.player.total >= 22:
@@ -427,7 +559,8 @@ class Game:
                 player_total_color = Fore.RED
             else:
                 player_total_color = Fore.RED
-            print(f"{self.player.name}'s final total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
+            print(
+                f"Your hand total: {player_total_color}{self.player.total}{Fore.WHITE}\n")
 
             if self.player.total2 > 0:
                 if self.player.total2 >= 22:
@@ -440,20 +573,22 @@ class Game:
                     player_total2_color = Fore.RED
                 else:
                     player_total2_color = Fore.RED
-                print(f"{self.player.name}'s second final total: {player_total2_color}{self.player.total2}{Fore.WHITE}\n")
+                print(
+                    f"Your 2nd final total: {player_total2_color}{self.player.total2}{Fore.WHITE}\n")
 
             winner = self.eval_hands()
             if winner == f'{self.player.name}':
                 self.player.score += 1
                 self.player.money += self.pot
                 Menu.save_money(self, self.player.money)
-                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived {Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived {Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: +{Fore.GREEN}{self.pot}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Dealer':
                 self.dealer.score += 1
                 self.dealer.money += self.pot
                 Menu.save_money(self, self.player.money)
-                print(f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                print(
+                    f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: -{Fore.RED}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Draw':
                 share_pot = self.pot / 2
@@ -461,9 +596,15 @@ class Game:
                 self.dealer.money += share_pot
                 Menu.save_money(self, self.player.money)
                 print(
-                    f'Draw! There is no winner :(\nEach player had a total of {Fore.RED}{self.player.total}{Fore.WHITE}\n')
+                    f'Draw! There is no winner :(\nUpdated wallet: +{Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
-                print('\n')
+            if winner == None:
+                share_pot = self.pot / 2
+                self.player.money += share_pot
+                self.dealer.money += share_pot
+                Menu.save_money(self, self.player.money)
+                print(
+                    f'Could not determine a winner.\nRound {Fore.RED}terminated{Fore.WHITE} :(\nUpdated wallet: +{Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
             time.sleep(.5)
             print('...\n')
 
@@ -477,7 +618,8 @@ class Game:
 
                 if play_again != 'q':
                     os.system('clear')
-                    reset_game = pyfiglet.figlet_format(text='Dealing\nNew\nCards!', font='chunky')
+                    reset_game = pyfiglet.figlet_format(
+                        text='Dealing\nNew\nCards!', font='chunky')
                     print(f'\n{reset_game}')
                     time.sleep(.5)
                     Menu.print_texture(self, texture1)
@@ -486,6 +628,8 @@ class Game:
                     Menu.print_texture(self, cards_txt)
                     time.sleep(.5)
                     self.clear_cards()
+                    double_down_flag = False
+                    double_down_flag2 = False
                     Menu.save_money(self, self.player.money)
                     self.player.total = 0
                     self.player.total2 = 0
@@ -521,7 +665,8 @@ class Menu:
             self.print_texture(texture1)
             menu_text = pyfiglet.figlet_format(text="Menu", font="rectangles")
             print(menu_text)
-            print('Options:\n[P]lay game\n[V]iew scores\n[W]allet\n[S]ettings\n[E]xit\n')
+            print(
+                'Options:\n[P]lay game\n[V]iew scores\n[W]allet\n[S]ettings\n[E]xit\n')
             menu_choice = input('Please select an option > ').lower().strip()
 
             if menu_choice == 'p' or menu_choice == '':
@@ -547,27 +692,32 @@ class Menu:
                         'Please select an option > ').lower().strip()
                     if settings_choice == 'v':
                         while True:
-                            volume_input = input("Enter volume value (0.0 - 1.0) > ")
+                            volume_input = input(
+                                "Enter volume value (0.0 - 1.0) > ")
 
                             try:
                                 volume = float(volume_input)
                                 if 0.0 <= volume <= 1.0:
                                     pygame.mixer.music.set_volume(volume)
                                     print('...')
-                                    print(f"Volume set to {Fore.GREEN}{volume}{Fore.WHITE}")
+                                    print(
+                                        f"Volume set to {Fore.GREEN}{volume}{Fore.WHITE}")
                                     print('...')
                                     time.sleep(.5)
                                     break
                                 else:
                                     print('...')
-                                    invalid_text = pyfiglet.figlet_format(text='IVALID', font='small')
+                                    invalid_text = pyfiglet.figlet_format(
+                                        text='IVALID', font='small')
                                     print(f'{Fore.RED}{invalid_text}')
-                                    print("Please enter a value between 0.0 and 1.0.")
+                                    print(
+                                        "Please enter a value between 0.0 and 1.0.")
                                     print('...')
                                     time.sleep(.5)
                             except ValueError:
                                 print('...')
-                                invalid_text = pyfiglet.figlet_format(text='IVALID', font='small')
+                                invalid_text = pyfiglet.figlet_format(
+                                    text='IVALID', font='small')
                                 print(f'{Fore.RED}{invalid_text}')
                                 print(f"{Fore.RED}'VALUE ERROR'{Fore.WHITE}")
                                 print('...')
@@ -582,7 +732,8 @@ class Menu:
                         break
 
                     else:
-                        invalid_text = pyfiglet.figlet_format(text='IVALID', font='small')
+                        invalid_text = pyfiglet.figlet_format(
+                            text='IVALID', font='small')
                         print(f'{Fore.RED}{invalid_text}')
                         print('Please enter a valid option.')
 
@@ -614,7 +765,8 @@ class Menu:
     def display_wallet(self):
         with open('player_money.txt', 'r') as file:
             player_money = int(file.read().strip())
-        print(f"\nYour available balance: ${Fore.GREEN}{player_money}{Fore.WHITE}\n")
+        print(
+            f"\nYour available balance: ${Fore.GREEN}{player_money}{Fore.WHITE}\n")
 
     def save_money(self, money):
         with open('player_money.txt', 'w') as file:
@@ -622,7 +774,7 @@ class Menu:
 
     def load_money(self):
         with open('player_money.txt', 'r') as file:
-            return int(file.read().strip())
+            return float(file.read().strip())
 
 
 if __name__ == "__main__":
