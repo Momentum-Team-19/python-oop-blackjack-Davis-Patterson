@@ -142,8 +142,6 @@ class Game:
         self.name = 'Blackjack'
         self.table_count = 0
         self.table_status = 'neutral'
-        self.deck = Deck()
-        self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         while True:
             name = input('\nWhat is your name? > ')
             if name == '':
@@ -154,6 +152,9 @@ class Game:
                 break
         self.dealer = Dealer()
         self.pot = 0
+        self.deck = Deck()
+        self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
+        self.shuffle_animation(5)
 
     def __str__(self):
         return self.name
@@ -240,7 +241,7 @@ class Game:
                 shuffling_text = pyfiglet.figlet_format(
                     text='Shuffling', font='cybermedium')
                 # print(f'{color}{shuffling_text}{Fore.WHITE}')
-                print(f'{color}Reshuffling the deck!{Fore.WHITE}')
+                print(f'{color}Shuffling the deck!!{Fore.WHITE}')
                 time.sleep(.06)
         print()
 
@@ -879,8 +880,8 @@ class Menu:
     def __init__(self):
         os.system('clear')
 
-        # pygame.mixer.music.load(music_path)
-        # pygame.mixer.music.play(-1)
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.play(-1)  # <= TURN MUSIC ON AND OFF
 
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
