@@ -547,7 +547,7 @@ class Game:
             self.table_status = 'very cold'
         elif -5 <= self.table_count <= -1:
             self.table_status = 'cold'
-        elif 0 < self.table_count < 0:
+        elif 0 <= self.table_count <= 0:
             self.table_status = 'neutral'
         elif 1 <= self.table_count <= 4:
             self.table_status = 'hot'
@@ -862,8 +862,9 @@ class Menu:
     def __init__(self):
         os.system('clear')
 
-        pygame.mixer.music.load(music_path)
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.load(music_path)
+        # pygame.mixer.music.play(-1)
+
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
         print(f'\n{welcome_text}')
