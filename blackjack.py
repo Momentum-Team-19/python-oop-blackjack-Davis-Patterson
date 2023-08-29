@@ -637,7 +637,6 @@ class Game:
                         self.player.show_hand()
                         additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
                         self.player.money -= additional_bet
-                        self.profit += additional_bet
                         Menu.save_money(self, self.player.money)
                         self.pot += additional_bet
                         print(
@@ -817,7 +816,7 @@ class Game:
             winner = self.eval_hands()
             if winner == f'{self.player.name}':
                 self.player.score += 1
-                self.profit += 50
+                self.player.profit += self.pot
                 self.player.money += self.pot
                 Menu.save_money(self, self.player.money)
                 print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived ${Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: +${Fore.GREEN}{self.pot}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
@@ -825,6 +824,8 @@ class Game:
             if winner == 'Dealer':
                 self.dealer.score += 1
                 self.dealer.money += self.pot
+                self.player.money -= self.pot
+                self.player.profit -= self.pot
                 Menu.save_money(self, self.player.money)
                 print(
                     f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: -${Fore.RED}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
@@ -832,6 +833,7 @@ class Game:
             if winner == 'Draw':
                 share_pot = self.pot / 2
                 self.player.money += share_pot
+                self.player.profit += share_pot
                 self.dealer.money += share_pot
                 Menu.save_money(self, self.player.money)
                 print(
@@ -840,6 +842,7 @@ class Game:
             if winner == None:
                 share_pot = self.pot / 2
                 self.player.money += share_pot
+                self.player.profit += share_pot
                 self.dealer.money += share_pot
                 Menu.save_money(self, self.player.money)
                 print(
