@@ -12,7 +12,7 @@ from colorama import Fore, Style
 colorama.init(autoreset=True)
 
 pygame.mixer.init()
-pygame.mixer.music.set_volume(.1)
+pygame.mixer.music.set_volume(.2)
 
 current_directory = os.path.dirname(__file__)
 music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
@@ -33,9 +33,9 @@ CARD_FORMATS = {
 }
 
 if os.name == 'posix':
-    refresh == 'cls'
+    refresh = 'clear'
 else:
-    refresh == 'clear'
+    refresh = 'cls'
 
 
 class Card:
@@ -889,8 +889,8 @@ class Menu:
     def __init__(self):
         os.system(refresh)
 
-        # pygame.mixer.music.load(music_path)
-        # pygame.mixer.music.play(-1)  # <= TURN MUSIC ON AND OFF
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.play(-1)  # <= TURN MUSIC ON AND OFF
 
         time.sleep(.5)
         welcome_text = pyfiglet.figlet_format(text='Welcome to', font='small')
