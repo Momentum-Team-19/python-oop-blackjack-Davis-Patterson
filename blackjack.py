@@ -19,18 +19,23 @@ music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 
 # SUITS = [
 #     f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
-#     f'{Fore.RED}❤{Fore.WHITE}',
+#     f'{Fore.RED}♥{Fore.WHITE}',
 #     f'{Fore.RED}♦{Fore.WHITE}',
 #     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 # ]
-SUITS = ['♠', '❤', '♦', '♣']
+SUITS = ['♠', '♥', '♦', '♣']
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_FORMATS = {
     '♠': f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
-    '❤': f'{Fore.RED}❤{Fore.WHITE}',
+    '♥': f'{Fore.RED}♥{Fore.WHITE}',
     '♦': f'{Fore.RED}♦{Fore.WHITE}',
     '♣': f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
 }
+
+if os.name == 'posix':
+    refresh == 'cls'
+else:
+    refresh == 'clear'
 
 
 class Card:
@@ -76,6 +81,7 @@ class Player:
         self.total2 = 0
         self.score = 0
         self.money = Menu.load_money(self)
+        self.profit = 0
 
     def __str__(self):
         return self.name
@@ -154,7 +160,7 @@ class Game:
         self.pot = 0
         self.deck = Deck()
         self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
-        self.shuffle_animation(5)
+        self.shuffle_animation()
 
     def __str__(self):
         return self.name
@@ -166,6 +172,7 @@ class Game:
                     "You're out of money. Withdraw more? [y/n] > ").lower()
                 if get_money == 'y' or get_money == '':
                     self.player.money += 50
+                    self.profit += 50
                     Menu.save_money(self, self.player.money)
                     print(
                         f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
@@ -231,13 +238,13 @@ class Game:
         self.eval_count()
         return card
 
-    def shuffle_animation(self, iterations=5):
+    def shuffle_animation(self, iterations=3):
         colors = [Fore.RED, Fore.YELLOW, Fore.BLUE,
                   Fore.GREEN, Fore.MAGENTA, Fore.CYAN, Fore.WHITE]
 
         for _ in range(iterations):
             for color in colors:
-                os.system('clear')
+                os.system(refresh)
                 shuffling_text = pyfiglet.figlet_format(
                     text='Shuffling', font='cybermedium')
                 # print(f'{color}{shuffling_text}{Fore.WHITE}')
@@ -317,7 +324,7 @@ class Game:
 
             if hit_input != 's' and hit_input != 'n':
                 self.deal_card(hand)
-                os.system('clear')
+                os.system(refresh)
 
                 self.dealer.show_hand(initial=True)
                 self.dealer.total = self.calc_hand(self.dealer.hand)
@@ -366,7 +373,7 @@ class Game:
                 print("No more cards")
                 break
             self.deal_card(self.dealer.hand)
-            os.system('clear')
+            os.system(refresh)
 
             self.dealer.show_hand(initial=True)
             self.dealer.total = self.calc_hand(self.dealer.hand)
@@ -464,7 +471,7 @@ class Game:
                 self.deal_card(hand)
                 additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
                 self.player.money -= additional_bet
-                os.system('clear')
+                os.system(refresh)
 
                 self.dealer.show_hand(initial=True)
 
@@ -507,7 +514,7 @@ class Game:
                 time.sleep(.5)
                 return True
             else:
-                os.system('clear')
+                os.system(refresh)
 
                 self.dealer.show_hand(initial=True)
 
@@ -581,7 +588,7 @@ class Game:
         while play_flag:
             self.player.total = 0
             self.dealer.total = 0
-            os.system('clear')
+            os.system(refresh)
 
             # print(self.deck)  # <= PRINTS THE WHOLE DECK AT START OF PLAY
 
@@ -614,7 +621,7 @@ class Game:
             self.place_bet(self.player)
             self.place_bet(self.dealer)
 
-            os.system('clear')
+            os.system(refresh)
 
             self.deal_hand()
 
@@ -624,12 +631,13 @@ class Game:
                         "Do you want to split your hand? [y/n] > ").lower().strip()
                     if split_decision != 'n':
                         self.split_hand()
-                        os.system('clear')
+                        os.system(refresh)
 
                         self.dealer.show_hand(initial=True)
                         self.player.show_hand()
                         additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
                         self.player.money -= additional_bet
+                        self.profit += additional_bet
                         Menu.save_money(self, self.player.money)
                         self.pot += additional_bet
                         print(
@@ -741,7 +749,7 @@ class Game:
             if (self.player.total <= 21 and self.dealer.total <= 16) or (self.player.total2 <= 21 and self.dealer.total <= 16):
                 self.dealer.total = self.dealer_hit()
 
-            os.system('clear')
+            os.system(refresh)
 
             self.dealer.show_hand(initial=False)
             self.dealer.total = self.calc_hand(self.dealer.hand)
@@ -809,6 +817,7 @@ class Game:
             winner = self.eval_hands()
             if winner == f'{self.player.name}':
                 self.player.score += 1
+                self.profit += 50
                 self.player.money += self.pot
                 Menu.save_money(self, self.player.money)
                 print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived ${Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: +${Fore.GREEN}{self.pot}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
@@ -847,7 +856,7 @@ class Game:
                     "[Enter] to play again, 'Q' to quit > ").lower().strip()
 
                 if play_again != 'q':
-                    os.system('clear')
+                    os.system(refresh)
 
                     reset_game = pyfiglet.figlet_format(
                         text='Dealing\nNew\nCards!', font='chunky')
@@ -878,7 +887,7 @@ class Game:
 
 class Menu:
     def __init__(self):
-        os.system('clear')
+        os.system(refresh)
 
         # pygame.mixer.music.load(music_path)
         # pygame.mixer.music.play(-1)  # <= TURN MUSIC ON AND OFF
