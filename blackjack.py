@@ -189,10 +189,11 @@ class Game:
                 if player == self.dealer:
                     bet = self.pot  # Match the player's bet
                 else:
-                    bet = (input(f"Enter your bet: > $"))
-
-                if bet == '':
-                    bet = 0
+                    bet_str = input(f"Enter your bet: > $")  # Capture bet as a string
+                    if bet_str == '':
+                        bet = 0
+                    else:
+                        bet = int(bet_str)  # Convert bet to an integer
 
                 if 0 <= bet <= player.money:
                     player.money -= bet
@@ -201,7 +202,8 @@ class Game:
                 else:
                     print("\nInvalid bet amount. Please enter a valid amount.\n")
             except ValueError:
-                print("\nInvalid input. Please enter a valid bet amount.\n")
+                print("\nInvalid input. Please enter a numeric bet amount.\n")
+
 
     def split_hand(self):
         if any(card.rank == self.player.hand[index + 1].rank for index, card in enumerate(self.player.hand[:-1])):
