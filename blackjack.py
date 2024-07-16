@@ -17,12 +17,6 @@ pygame.mixer.music.set_volume(.2)
 current_directory = os.path.dirname(__file__)
 music_path = os.path.join(current_directory, 'sfx', 'blackjack_loop.mp3')
 
-# SUITS = [
-#     f'{Fore.BLACK}{Style.BRIGHT}♠{Fore.WHITE}{Style.NORMAL}',
-#     f'{Fore.RED}♥{Fore.WHITE}',
-#     f'{Fore.RED}♦{Fore.WHITE}',
-#     f'{Fore.BLACK}{Style.BRIGHT}♣{Fore.WHITE}{Style.NORMAL}'
-# ]
 SUITS = ['♠', '♥', '♦', '♣']
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 CARD_FORMATS = {
@@ -80,7 +74,7 @@ class Player:
         self.total = 0
         self.total2 = 0
         self.score = 0
-        self.money = Menu.load_money(self)
+        self.money = Menu.load_money()
         self.profit = 0
 
     def __str__(self):
@@ -161,27 +155,25 @@ class Game:
         self.deck = Deck()
         self.deck.shuffle()  # <= SHUFFLES THE DECK AT THE BEGINNING OF THE GAME !!!
         self.shuffle_animation()
+        self.check_player_money()
 
     def __str__(self):
         return self.name
 
     def check_player_money(self):
-        if self.player.money <= 0:
-            while True:
-                get_money = input(
-                    "You're out of money. Withdraw more? [y/n] > ").lower()
-                if get_money == 'y' or get_money == '':
-                    self.player.money += 50
-                    self.profit += 50
-                    Menu.save_money(self, self.player.money)
-                    print(
-                        f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
-                    break
-                elif get_money == 'n':
-                    Menu.save_money(self, self.player.money)
-                    break
-                else:
-                    print("\nIt is suggested that you visit an ATM.\n")
+        while self.player.money <= 0:
+            get_money = input("You're out of money. Withdraw more? [y/n] > ").lower()
+            if get_money == 'y' or get_money == '':
+                self.player.money = max(50, self.player.money + 50)  # Ensure the money is at least $50
+                self.player.profit += 50
+                Menu.save_money(self.player.money)
+                print(f"\nYou received ${Fore.GREEN}50{Fore.WHITE}.\nUpdated wallet: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n")
+            elif get_money == 'n':
+                Menu.save_money(self.player.money)
+                print("\nIt is suggested that you visit an ATM.\n")
+                break
+            else:
+                print("\nInvalid input. Please enter 'y' or 'n'.\n")
 
     def place_bet(self, player):
         while True:
@@ -418,52 +410,52 @@ class Game:
         return self.dealer.total
 
     def eval_hands(self):
-        self.player.total = self.calc_hand(self.player.hand)
-        if self.player.hand2:
-            self.player.total2 = self.calc_hand(self.player.hand2)
-        self.dealer.total = self.calc_hand(self.dealer.hand)
+      self.player.total = self.calc_hand(self.player.hand)
+      if self.player.hand2:
+          self.player.total2 = self.calc_hand(self.player.hand2)
+      self.dealer.total = self.calc_hand(self.dealer.hand)
 
-        if self.player.total2 == 0:
-            if self.player.total > 21:
-                return "Dealer"
-            elif self.dealer.total > 21:
-                return self.player.name
-            elif self.player.total < 22 and self.dealer.total < 22:
-                if self.player.total > self.dealer.total:
-                    return self.player.name
-                elif self.dealer.total > self.player.total:
-                    return "Dealer"
-                else:
-                    return "Draw"
+      if self.player.total2 == 0:
+          if self.player.total > 21:
+              return "Dealer"
+          elif self.dealer.total > 21:
+              return self.player.name
+          elif self.player.total < 22 and self.dealer.total < 22:
+              if self.player.total > self.dealer.total:
+                  return self.player.name
+              elif self.dealer.total > self.player.total:
+                  return "Dealer"
+              else:
+                  return "Draw"
 
-        elif self.player.total2 > 0:
-            if self.player.total > 21 and self.player.total2 > 21:
-                return "Dealer"
-            elif self.dealer.total > 21:
-                return self.player.name
-            elif self.player.total > 21 and self.player.total2 < 22 and self.dealer.total < 22:
-                if self.player.total2 > self.dealer.total:
-                    return self.player.name
-                elif self.dealer.total > self.player.total2:
-                    return "Dealer"
-                else:
-                    return "Draw"
-            elif self.player.total2 > 21 and self.player.total < 22 and self.dealer.total < 22:
-                if self.player.total > self.dealer.total:
-                    return self.player.name
-                elif self.dealer.total > self.player.total:
-                    return "Dealer"
-                else:
-                    return "Draw"
-            elif self.player.total < 22 and self.player.total2 < 22 and self.dealer.total < 22:
-                if self.player.total > self.dealer.total or self.player.total2 > self.dealer.total:
-                    return self.player.name
-                elif self.dealer.total > self.player.total and self.dealer.total > self.player.total2:
-                    return "Dealer"
-                elif (self.player.total2 < self.player.total and self.player.total == self.dealer.total) or (self.player.total < self.player.total2 and self.player.total2 == self.dealer.total):
-                    return "Draw"
-                else:
-                    return None
+      elif self.player.total2 > 0:
+          if self.player.total > 21 and self.player.total2 > 21:
+              return "Dealer"
+          elif self.dealer.total > 21:
+              return self.player.name
+          elif self.player.total > 21 and self.player.total2 < 22 and self.dealer.total < 22:
+              if self.player.total2 > self.dealer.total:
+                  return self.player.name
+              elif self.dealer.total > self.player.total2:
+                  return "Dealer"
+              else:
+                  return "Draw"
+          elif self.player.total2 > 21 and self.player.total < 22 and self.dealer.total < 22:
+              if self.player.total > self.dealer.total:
+                  return self.player.name
+              elif self.dealer.total > self.player.total:
+                  return "Dealer"
+              else:
+                  return "Draw"
+          elif self.player.total < 22 and self.player.total2 < 22 and self.dealer.total < 22:
+              if self.player.total > self.dealer.total or self.player.total2 > self.dealer.total:
+                  return self.player.name
+              elif self.dealer.total > self.player.total and self.dealer.total > self.player.total2:
+                  return "Dealer"
+              elif (self.player.total2 < self.player.total and self.player.total == self.dealer.total) or (self.player.total < self.player.total2 and self.player.total2 == self.dealer.total):
+                  return "Draw"
+              else:
+                  return None
 
     def double_down(self, hand, total, double_down_has_ace):
         while (double_down_has_ace and total < 19) or (not double_down_has_ace and total < 12):
@@ -639,7 +631,7 @@ class Game:
                         self.player.show_hand()
                         additional_bet = self.pot / 2  # <= ADDS A SECOND WAGER FOR SECOND HAND
                         self.player.money -= additional_bet
-                        Menu.save_money(self, self.player.money)
+                        Menu.save_money(self.player.money)
                         self.pot += additional_bet
                         print(
                             f"Your hand total: {Fore.CYAN}{self.player.total}{Fore.WHITE}")
@@ -820,35 +812,33 @@ class Game:
                 self.player.score += 1
                 self.player.profit += self.pot
                 self.player.money += self.pot
-                Menu.save_money(self, self.player.money)
-                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived ${Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nUpdated wallet: +${Fore.GREEN}{self.pot}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                Menu.save_money(self.player.money)
+                print(f'Winner: {Fore.GREEN}{winner}{Fore.WHITE}!\nReceived ${Fore.GREEN}{self.pot}{Fore.WHITE}!\n \nWallet total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Dealer':
+                pot_contribution = self.pot / 2
                 self.dealer.score += 1
                 self.dealer.money += self.pot
-                self.player.money -= self.pot
-                self.player.profit -= self.pot
-                Menu.save_money(self, self.player.money)
                 print(
-                    f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nUpdated wallet: -${Fore.RED}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Winner: {Fore.RED}{winner}{Fore.WHITE}!\nThe house always {Fore.RED}WINS{Fore.WHITE} :(\n \nWallet: -${Fore.RED}{pot_contribution}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
                 self.pot = 0
             if winner == 'Draw':
                 share_pot = self.pot / 2
                 self.player.money += share_pot
                 self.player.profit += share_pot
                 self.dealer.money += share_pot
-                Menu.save_money(self, self.player.money)
+                Menu.save_money(self.player.money)
                 print(
-                    f'Draw! There is no winner :(\nUpdated wallet: +${Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Draw! There is no winner :(\nWallet: +${self.pot / 2} total: ${self.player.money}\n')
                 self.pot = 0
             if winner == None:
                 share_pot = self.pot / 2
                 self.player.money += share_pot
                 self.player.profit += share_pot
                 self.dealer.money += share_pot
-                Menu.save_money(self, self.player.money)
+                Menu.save_money(self.player.money)
                 print(
-                    f'Could not determine a winner.\nRound {Fore.RED}terminated{Fore.WHITE} :(\nUpdated wallet: +${Fore.GREEN}{self.pot / 2}{Fore.WHITE} total: ${Fore.GREEN}{self.player.money}{Fore.WHITE}\n')
+                    f'Could not determine a winner.\nRound {Fore.RED}terminated{Fore.WHITE} :(\nWallet: +${self.pot / 2} total: ${self.player.money}\n')
             time.sleep(.5)
             print('...\n')
 
@@ -875,7 +865,7 @@ class Game:
                     self.clear_cards()
                     double_down_flag = False
                     double_down_flag2 = False
-                    Menu.save_money(self, self.player.money)
+                    Menu.save_money(self.player.money)
                     self.player.total = 0
                     self.player.total2 = 0
                     self.dealer.total = 0
@@ -885,7 +875,7 @@ class Game:
                     time.sleep(.5)
                     print('\n...\n')
                     time.sleep(.5)
-                    Menu.save_money(self, self.player.money)
+                    Menu.save_money(self.player.money)
                     play_flag = False
                     break
 
@@ -1031,13 +1021,21 @@ class Menu:
         print(
             f"\nYour available balance: {Style.BRIGHT}${Fore.GREEN}{player_money}{Style.NORMAL}{Fore.WHITE}\n")
 
-    def save_money(self, money):
+    @staticmethod
+    def save_money(money):
         with open('player_money.txt', 'w') as file:
             file.write(str(money))
 
-    def load_money(self):
-        with open('player_money.txt', 'r') as file:
-            return float(file.read().strip())
+    @staticmethod
+    def load_money():
+        try:
+            with open('player_money.txt', 'r') as file:
+                money = float(file.read().strip())
+                return max(money, 0)  # Ensure the money is at least 0
+        except FileNotFoundError:
+            with open('player_money.txt', 'w') as file:
+                file.write('50.0')  # Initial money when file is first created
+            return 50.0
 
 
 if __name__ == "__main__":
